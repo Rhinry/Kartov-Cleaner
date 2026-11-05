@@ -14,6 +14,12 @@ struct Globe: View {
     var size: CGFloat = 220
     /// 0…1: a burst of sparkles and a stronger halo (end of a clean).
     var shine: Double = 0
+    /// 0…1: processor load / heat. The halo turns orange and pulses.
+    var heat: Double = 0
+    /// 0…1: memory pressure. Grey cloud cover thickens.
+    var fog: Double = 0
+    /// 0…1: disk used, drawn as a ring around the planet. Nil: no ring.
+    var ring: Double? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -23,7 +29,10 @@ struct Globe: View {
                 GlobePainter(dirt: max(0, min(1, dirt)),
                              angle: reduceMotion ? 0.6 : t * speed,
                              time: reduceMotion ? 0 : t,
-                             shine: max(0, min(1, shine)))
+                             shine: max(0, min(1, shine)),
+                             heat: max(0, min(1, heat)),
+                             fog: max(0, min(1, fog)),
+                             ring: ring.map { max(0, min(1, $0)) })
                     .paint(&ctx, size: canvasSize)
             }
         }
@@ -33,9 +42,14 @@ struct Globe: View {
     }
 
     private var accessibilityText: String {
-        if dirt < 0.08 { return L("Temiz bir dünya") }
-        if dirt < 0.4 { return L("Biraz kirlenmiş bir dünya") }
-        return L("Çok kirli bir dünya")
+        var parts: [String] = []
+        if dirt < 0.08 { parts.append(L("Temiz bir dünya")) }
+        else if dirt < 0.4 { parts.append(L("Biraz kirlenmiş bir dünya")) }
+        else { parts.append(L("Çok kirli bir dünya")) }
+        if heat > 0.3 { parts.append(L("ısınmış")) }
+        if fog > 0.3 { parts.append(L("bulutlu")) }
+        if let ring { parts.append(L("disk %{0} dolu", Int(ring * 100))) }
+        return parts.joined(separator: ", ")
     }
 }
 
@@ -106,6 +120,9 @@ private struct GlobePainter {
     let angle: Double
     let time: Double
     let shine: Double
+    var heat: Double = 0
+    var fog: Double = 0
+    var ring: Double? = nil
 
     // Clean and dirty palettes, mixed by `dirt`.
     private let oceanLightClean = RGB(0x4FA3FF), oceanDarkClean = RGB(0x0B2E6B)
@@ -168,6 +185,16 @@ private struct GlobePainter {
                 layer.fill(Path(ellipseIn: disc), with: .color(Color(.sRGB, red: 0.35, green: 0.26, blue: 0.16, opacity: 0.42 * dirt)))
             }
 
+            // Memory pressure: a grey cover of extra cloud.
+            if fog > 0 {
+                for (i, (lon, lat, r)) in Seeds.clouds.enumerated() where i % 2 == 1 {
+                    let drift = time * 0.03 * (1 + Double(i % 3) * 0.4)
+                    blob(&layer, c: c, R: R, lon: lon - drift + 0.6, lat: lat * 0.8, r: r * (1.4 + fog),
+                         fill: Color(.sRGB, red: 0.78, green: 0.80, blue: 0.84, opacity: 0.35 * fog), edge: nil, flat: 2.2)
+                }
+                layer.fill(Path(ellipseIn: disc), with: .color(Color(.sRGB, red: 0.62, green: 0.65, blue: 0.70, opacity: 0.18 * fog)))
+            }
+
             // Day/night shading and a soft highlight.
             layer.fill(Path(ellipseIn: disc), with: .radialGradient(
                 Gradient(colors: [.clear, .black.opacity(0.62)]),
@@ -180,7 +207,10 @@ private struct GlobePainter {
 
         // Rim light.
         ctx.stroke(Path(ellipseIn: disc.insetBy(dx: 0.5, dy: 0.5)),
-                   with: .color(haloClean.mix(haloDirty, dirt).color(0.45 + 0.3 * shine)), lineWidth: 1.2)
+                   with: .color(haloClean.mix(haloDirty, dirt).mix(RGB(0xFF8A3D), heat).color(0.45 + 0.3 * shine + 0.3 * heat)),
+                   lineWidth: 1.2 + CGFloat(heat))
+
+        if let ring { drawRing(&ctx, c: c, R: R, fraction: ring) }
 
         drawDebris(&ctx, c: c, R: R, front: true)
         if shine > 0 { drawSparkles(&ctx, c: c, R: R) }
@@ -206,14 +236,27 @@ private struct GlobePainter {
     }
 
     private func drawHalo(_ ctx: inout GraphicsContext, c: CGPoint, R: CGFloat) {
-        let halo = haloClean.mix(haloDirty, dirt)
-        let strength = 0.32 + 0.18 * (1 - dirt) + 0.2 * dirt + 0.35 * shine
+        let pulse = heat > 0 ? 0.85 + 0.15 * sin(time * (2 + heat * 3)) : 1
+        let halo = haloClean.mix(haloDirty, dirt).mix(RGB(0xFF8A3D), heat * 0.85)
+        let strength = (0.32 + 0.18 * (1 - dirt) + 0.2 * dirt + 0.35 * shine + 0.25 * heat) * pulse
         let outer = R * (1.38 + 0.12 * CGFloat(shine))
         ctx.fill(Path(ellipseIn: CGRect(x: c.x - outer, y: c.y - outer, width: outer * 2, height: outer * 2)),
                  with: .radialGradient(Gradient(stops: [
                     .init(color: halo.color(strength), location: 0.70),
                     .init(color: halo.color(0), location: 1.0)]),
                     center: c, startRadius: 0, endRadius: outer))
+    }
+
+    /// Disk use as a thin ring: blue when there is room, yellow when tight, red when nearly full.
+    private func drawRing(_ ctx: inout GraphicsContext, c: CGPoint, R: CGFloat, fraction: Double) {
+        let r = R * 1.30
+        let w = max(2, R * 0.035)
+        let rect = CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)
+        ctx.stroke(Path(ellipseIn: rect), with: .color(.white.opacity(0.08)), lineWidth: w)
+        var arc = Path()
+        arc.addArc(center: c, radius: r, startAngle: .degrees(-90), endAngle: .degrees(-90 + 360 * fraction), clockwise: false)
+        let color: RGB = fraction >= 0.9 ? RGB(0xFF5A5F) : (fraction >= 0.8 ? RGB(0xF2D16B) : RGB(0x6FB8FF))
+        ctx.stroke(arc, with: .color(color.color(0.9)), style: StrokeStyle(lineWidth: w, lineCap: .round))
     }
 
     private func drawDebris(_ ctx: inout GraphicsContext, c: CGPoint, R: CGFloat, front: Bool) {

@@ -1,9 +1,10 @@
 import SwiftUI
 import AppKit
+import Combine
 import KartovCore
 
 enum AppSection: String, Hashable, CaseIterable, Identifiable {
-    case dashboard, overview, scan, results, fullScan, system, analysis, maintenance, history, settings
+    case dashboard, overview, scan, results, fullScan, system, analysis, guardian, maintenance, history, settings
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -17,6 +18,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .history: return L("Geçmiş")
         case .settings: return L("Ayarlar")
         case .analysis: return L("Analiz")
+        case .guardian: return L("Gözetim")
         }
     }
     var symbol: String {
@@ -31,6 +33,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .history: return "clock.arrow.circlepath"
         case .settings: return "gearshape"
         case .analysis: return "chart.bar.xaxis"
+        case .guardian: return "shield.lefthalf.filled"
         }
     }
 }
@@ -164,6 +167,10 @@ final class AppModel: ObservableObject {
     @Published var history: [CleanRecord] = []
     @Published var cleaningProgress: Double = 0
     @Published var openRecords: Set<UUID> = []
+    /// Items of profile-protected groups the user chose to clean anyway (this session only).
+    @Published var released: Set<String> = []
+    private var profileWatch: AnyCancellable?
+    private var guardianObserver: NSObjectProtocol?
     @Published var errorMessage: String?
     /// Items of opt-in rules (user files, history, cookies, backups) the user chose to clean.
     @Published private(set) var optedIn: Set<String> = []
@@ -355,6 +362,20 @@ final class AppModel: ObservableObject {
         scheduleAutoCheck()
         StatusBar.shared.install(model: self)
         Updater.shared.start()
+        Guardian.shared.start()
+        // A new work profile changes what is kept: redraw everything that depends on it.
+        profileWatch = ProfileStore.shared.objectWillChange.sink { [weak self] _ in
+            DispatchQueue.main.async { self?.objectWillChange.send() }
+        }
+        guardianObserver = NotificationCenter.default.addObserver(forName: .kartovOpenGuardian, object: nil, queue: .main) { [weak self] _ in
+            Task { @MainActor in self?.section = .guardian }
+        }
+    }
+
+    /// Adds a record made outside the cleanup screen (App Dependency Map) to History.
+    func addRecord(_ r: CleanRecord) {
+        history.insert(r, at: 0)
+        store.update { $0.records.insert(r, at: 0) }
     }
 
     /// Answer to the first-run question.
@@ -444,7 +465,7 @@ final class AppModel: ObservableObject {
     var autoRules: [CleanRule] {
         allRules.filter { r in
             autoGroups.contains(r.group) && r.defaultOn && !r.group.isUserData && r.group != .privacy &&
-            r.id != "backups.ios"
+            r.id != "backups.ios" && !ProfileStore.shared.protects(r.group)
         }
     }
 
@@ -494,7 +515,8 @@ final class AppModel: ObservableObject {
         var rules = autoRules
         if rules.isEmpty && quick {
             let safeGroups: Set<CategoryGroup> = [.apps, .creative, .browsers, .developer, .logs]
-            rules = allRules.filter { safeGroups.contains($0.group) && $0.defaultOn && $0.safety == .safe }
+            rules = allRules.filter { safeGroups.contains($0.group) && $0.defaultOn && $0.safety == .safe &&
+                !ProfileStore.shared.protects($0.group) }
         }
         let home = FileManager.default.homeDirectoryForCurrentUser
         let all = allRules
@@ -953,7 +975,10 @@ final class AppModel: ObservableObject {
     /// Items of rules that are on by default are cleaned unless kept; items of opt-in rules
     /// (the user's own files, history, cookies, backups) are kept unless chosen.
     func isKept(_ item: FoundItem) -> Bool {
-        if rule(item.ruleID)?.defaultOn == false { return !optedIn.contains(item.selectionKey) }
+        guard let r = rule(item.ruleID) else { return kept.contains(item.selectionKey) }
+        if r.defaultOn == false { return !optedIn.contains(item.selectionKey) }
+        // The work profile protects some groups: kept unless the user switches them on by hand.
+        if ProfileStore.shared.protects(r.group) { return !released.contains(item.selectionKey) }
         return kept.contains(item.selectionKey)
     }
 
@@ -1026,6 +1051,8 @@ final class AppModel: ObservableObject {
         for item in part.items {
             if rule(item.ruleID)?.defaultOn == false {
                 if keep { optedIn.remove(item.selectionKey) } else { optedIn.insert(item.selectionKey) }
+            } else if let r = rule(item.ruleID), ProfileStore.shared.protects(r.group) {
+                if keep { released.remove(item.selectionKey) } else { released.insert(item.selectionKey) }
             } else {
                 if keep { kept.insert(item.selectionKey) } else { kept.remove(item.selectionKey) }
             }

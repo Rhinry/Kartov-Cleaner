@@ -45,6 +45,7 @@ struct RootView: View {
         .overlay { CleanOverlay() }
         .overlay { if model.showTutorial { TutorialView() } }
         .overlay { if model.showBackgroundQuestion { BackgroundQuestion() } }
+        .overlay { AppMapOverlay() }
         .overlay { UpdateOverlay() }
         .animation(KMotion.base, value: model.cleanAnimationStart)
         .animation(KMotion.base, value: model.showTutorial)
@@ -76,6 +77,7 @@ struct RootView: View {
                 case .history: HistoryView()
                 case .settings: SettingsView()
                 case .analysis: AnalysisView()
+                case .guardian: GuardianView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -86,7 +88,7 @@ struct RootView: View {
 
 /// The tabs shown in the top bar. "Temizlik" covers both the scan and its results.
 enum TopTab: CaseIterable, Identifiable {
-    case home, overview, clean, full, system, analysis, care, history
+    case home, overview, clean, full, system, analysis, watch, care, history
     var id: Self { self }
     var title: String {
         switch self {
@@ -96,6 +98,7 @@ enum TopTab: CaseIterable, Identifiable {
         case .full: return L("Tam tarama")
         case .system: return L("Sistem")
         case .analysis: return L("Analiz")
+        case .watch: return L("Gözetim")
         case .care: return L("Bakım")
         case .history: return L("Geçmiş")
         }
@@ -108,6 +111,7 @@ enum TopTab: CaseIterable, Identifiable {
         case .full: return "chart.pie.fill"
         case .system: return "speedometer"
         case .analysis: return "chart.bar.xaxis"
+        case .watch: return "shield.lefthalf.filled"
         case .care: return "clock.badge.checkmark"
         case .history: return "clock.arrow.circlepath"
         }
@@ -120,6 +124,7 @@ enum TopTab: CaseIterable, Identifiable {
         case .full: return [.fullScan]
         case .system: return [.system]
         case .analysis: return [.analysis]
+        case .watch: return [.guardian]
         case .care: return [.maintenance]
         case .history: return [.history]
         }
@@ -130,6 +135,7 @@ enum TopTab: CaseIterable, Identifiable {
 /// Pill tabs across the top of the window (the title bar is hidden; room is left for the window buttons).
 struct TopBar: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var guardian = Guardian.shared
 
     var body: some View {
         // Row 1 sits level with the window buttons: logo and name on the left, help on the right.
@@ -193,6 +199,7 @@ struct TopBar: View {
         switch tab {
         case .clean where model.phase == .scanning: return "%\(Int(model.scanFraction * 100))"
         case .clean where model.selectedBytes > 0: return KBytes.format(model.selectedBytes)
+        case .watch where guardian.unread > 0: return "\(guardian.unread)"
         default: return nil
         }
     }
@@ -236,11 +243,13 @@ func klog(_ message: String) {
 
 struct MenuBarPanel: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var guardian = Guardian.shared
     var body: some View {
         let bytes = model.selectedBytes
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                Globe(dirt: dirtLevel(bytes), speed: model.autoRunning ? 1.2 : 0.2, size: 40)
+                Globe(dirt: dirtLevel(bytes), speed: model.autoRunning ? 1.2 : 0.2, size: 40,
+                      heat: guardian.heat, fog: guardian.fog)
                     .frame(width: 60, height: 60)
                 VStack(alignment: .leading, spacing: 2) {
                     KartovBrand()

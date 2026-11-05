@@ -114,6 +114,9 @@ struct AnalysisView: View {
                             .help(L("{0} kapanır; kaydedilmemiş işin varsa sorar.", a.name))
                         Menu {
                             Button(L("Zorla kapat")) { model.forceQuit(pid: a.id) }
+                            if let id = a.bundleID {
+                                Button(L("Bağlantılı dosyalar")) { AppMap.shared.open(bundleID: id, name: a.name, url: a.url) }
+                            }
                             if let url = a.url { Button(L("Finder'da göster")) { Finder.reveal(url.path) } }
                         } label: { Image(systemName: "ellipsis.circle") }
                         .menuStyle(.borderlessButton).fixedSize()
@@ -266,6 +269,9 @@ struct RemoveButton: View {
         } else {
             Menu {
                 Button(L("Kaldır…")) { model.removeCandidate = app.id }
+                if let id = app.bundleID {
+                    Button(L("Bağlantılı dosyalar")) { AppMap.shared.open(bundleID: id, name: app.name, url: app.url) }
+                }
                 Button(L("Finder'da göster")) { Finder.reveal(app.url.path) }
             } label: { Image(systemName: "ellipsis.circle") }
             .menuStyle(.borderlessButton).fixedSize()

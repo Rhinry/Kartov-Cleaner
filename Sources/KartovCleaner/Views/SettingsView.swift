@@ -4,6 +4,8 @@ import KartovCore
 /// Everything adjustable in one place, in plain cards: general, cleaning, permissions, data, about.
 struct SettingsView: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var profiles = ProfileStore.shared
+    @ObservedObject private var guardian = Guardian.shared
 
     var body: some View {
         ScrollView {
@@ -13,9 +15,11 @@ struct SettingsView: View {
                     VStack(spacing: 16) {
                         UpdateSettingsCard()
                         generalCard
+                        profileCard
                         cleaningCard
                     }
                     VStack(spacing: 16) {
+                        guardianCard
                         permissionsCard
                         dataCard
                         aboutCard
@@ -29,6 +33,72 @@ struct SettingsView: View {
         .toggleStyle(.switch)
         .controlSize(.small)
         .onAppear { model.refreshPermissions() }
+    }
+
+    // MARK: work profile
+
+    private var profileCard: some View {
+        let active = profiles.active
+        let settings = profiles.settings(for: active)
+        return SettingsCard(title: L("Çalışma profili"), symbol: "person.crop.rectangle.stack") {
+            Picker("", selection: Binding(get: { profiles.active }, set: { profiles.active = $0 })) {
+                ForEach(WorkspaceProfile.allCases) { p in Text(p.title).tag(p) }
+            }
+            .pickerStyle(.segmented).labelsHidden()
+            Text(active.summary).font(.system(size: 12)).foregroundStyle(KColor.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(L("Korunan önbellekler")).font(.system(size: 12, weight: .semibold)).padding(.top, 4)
+            Text(L("Bu profilde temizlikte varsayılan olarak korunur; otomatik bakım ve hızlı temizlik dokunmaz. Bulunanlar ekranında tek tek yine temizleyebilirsin."))
+                .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach([CategoryGroup.creative, .developer, .browsers, .apps, .logs], id: \.self) { g in
+                SettingsRow(g.title) {
+                    Toggle("", isOn: Binding(get: { settings.protected.contains(g) }, set: { on in
+                        profiles.update(active) { if on { $0.protected.insert(g) } else { $0.protected.remove(g) } }
+                    })).labelsHidden()
+                }
+            }
+            Divider().overlay(KColor.border)
+            SettingsRow(L("Yoğun programlar için uyarma"), note: L("Profilin ağır programları (render, derleme, oyun) işlemciyi yorsa da Gözetim uyarı vermez.")) {
+                Toggle("", isOn: Binding(get: { settings.quietHeavy }, set: { on in profiles.update(active) { $0.quietHeavy = on } }))
+                    .labelsHidden()
+            }
+            SettingsRow(L("Oyun açıkken bildirim gönderme"), note: L("Uyarılar yine Gözetim'de birikir.")) {
+                Toggle("", isOn: Binding(get: { settings.quietWhilePlaying }, set: { on in profiles.update(active) { $0.quietWhilePlaying = on } }))
+                    .labelsHidden()
+            }
+            Button(L("Bu profili varsayılana döndür")) { profiles.reset(active) }
+                .buttonStyle(.plain).font(.system(size: 12)).foregroundStyle(KColor.accentSoft)
+        }
+    }
+
+    // MARK: guardian
+
+    private var guardianCard: some View {
+        SettingsCard(title: L("Gözetim"), symbol: "shield.lefthalf.filled") {
+            SettingsRow(L("Mac'ime göz kulak ol"), note: L("Dakikada bir bakar; yalnızca okur, hiçbir şey silmez.")) {
+                Toggle("", isOn: Binding(get: { guardian.enabled }, set: { guardian.enabled = $0 })).labelsHidden()
+            }
+            SettingsRow(L("Bildirim gönder")) {
+                Toggle("", isOn: Binding(get: { guardian.notify }, set: { guardian.notify = $0 })).labelsHidden()
+            }
+            .disabled(!guardian.enabled)
+            Divider().overlay(KColor.border)
+            SettingsRow(L("İşlemciyi uzun süre yoran programlar")) {
+                Toggle("", isOn: Binding(get: { guardian.watchCPU }, set: { guardian.watchCPU = $0 })).labelsHidden()
+            }
+            SettingsRow(L("Dolmak üzere olan bellek")) {
+                Toggle("", isOn: Binding(get: { guardian.watchMemory }, set: { guardian.watchMemory = $0 })).labelsHidden()
+            }
+            SettingsRow(L("Dolan ya da hızla dolan disk")) {
+                Toggle("", isOn: Binding(get: { guardian.watchDisk }, set: { guardian.watchDisk = $0 })).labelsHidden()
+            }
+            SettingsRow(L("Aniden büyüyen programlar"), note: L("Programların Library dosyaları altı saatte bir ölçülür.")) {
+                Toggle("", isOn: Binding(get: { guardian.watchGrowth }, set: { guardian.watchGrowth = $0 })).labelsHidden()
+            }
+            Button(L("Gözetim ölçümlerini sıfırla")) { guardian.resetData() }
+                .buttonStyle(.plain).font(.system(size: 12)).foregroundStyle(KColor.accentSoft)
+        }
     }
 
     // MARK: general

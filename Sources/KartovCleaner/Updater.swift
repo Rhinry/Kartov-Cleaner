@@ -427,9 +427,14 @@ final class Updater: NSObject, ObservableObject {
 extension Updater: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
+        let fromGuardian = response.notification.request.identifier.hasPrefix("kartov-guardian")
         Task { @MainActor in
             StatusBar.shared.openApp()
-            Updater.shared.showSheet = true
+            if fromGuardian {
+                NotificationCenter.default.post(name: .kartovOpenGuardian, object: nil)
+            } else {
+                Updater.shared.showSheet = true
+            }
             completionHandler()
         }
     }
