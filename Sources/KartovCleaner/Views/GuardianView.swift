@@ -10,10 +10,7 @@ struct GuardianView: View {
     var body: some View {
         VStack(spacing: 0) {
             PageHeader(title: L("Gözetim")) {
-                Picker("", selection: Binding(get: { guardian.page }, set: { guardian.page = $0 })) {
-                    ForEach(Guardian.Page.allCases) { p in Text(p.title).tag(p) }
-                }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 380)
+                GuardianTabs()
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
@@ -29,6 +26,42 @@ struct GuardianView: View {
                 .frame(maxWidth: .infinity)
             }
         }
+    }
+}
+
+/// The four Gözetim pages as pill tabs, drawn like the main tab bar.
+struct GuardianTabs: View {
+    @ObservedObject private var guardian = Guardian.shared
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(Guardian.Page.allCases) { p in
+                let selected = guardian.page == p
+                Button { guardian.page = p } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: p.symbol).font(.system(size: 11, weight: .semibold))
+                        Text(p.title).font(.system(size: 12, weight: selected ? .semibold : .medium))
+                        if p == .overview && guardian.unread > 0 {
+                            Text("\(guardian.unread)").font(.system(size: 10, weight: .bold).monospacedDigit())
+                                .padding(.horizontal, 6).padding(.vertical, 1)
+                                .background(Capsule().fill(selected ? Color.white.opacity(0.22) : KColor.heat.opacity(0.18)))
+                                .foregroundStyle(selected ? Color.white : KColor.heatSoft)
+                        }
+                    }
+                    .foregroundStyle(selected ? Color.white : KColor.textMuted)
+                    .padding(.horizontal, 12).frame(height: 28)
+                    .background(Capsule().fill(selected ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(Color.clear)))
+                    .shadow(color: KColor.accent.opacity(selected ? 0.4 : 0), radius: 6, y: 2)
+                    .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background(Capsule().fill(KColor.surface.opacity(0.8)))
+        .overlay(Capsule().strokeBorder(KGradient.rim))
+        .fixedSize()
     }
 }
 

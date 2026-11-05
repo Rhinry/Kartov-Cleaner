@@ -116,6 +116,14 @@ final class Guardian: ObservableObject {
             case .privacy: return L("Gizlilik")
             }
         }
+        var symbol: String {
+            switch self {
+            case .overview: return "shield.lefthalf.filled"
+            case .energy: return "bolt.fill"
+            case .crashes: return "exclamationmark.triangle.fill"
+            case .privacy: return "hand.raised.fill"
+            }
+        }
     }
 
     // Settings
@@ -545,22 +553,26 @@ final class Guardian: ObservableObject {
 
     private func sampleLiveEnergy() {
         let now = Date()
-        var next: [pid_t: (energy: UInt64, at: Date)] = [:]
+        var next: [pid_t: Bool] = [:]
         var rows: [EnergyRow] = []
         let me = ProcessInfo.processInfo.processIdentifier
         for app in NSWorkspace.shared.runningApplications where app.activationPolicy == .regular && app.processIdentifier != me {
             let pid = app.processIdentifier
             guard let u = Self.usage(pid) else { continue }
-            next[pid] = (u.energy, now)
+            next[pid] = true
             var watts = 0.0
             if let p = livePrev[pid], u.energy >= p.energy {
                 let dt = now.timeIntervalSince(p.at)
                 if dt > 0.5 { watts = Double(u.energy - p.energy) / 1e9 / dt }
+            } else {
+                livePrev[pid] = (u.energy, now)
             }
             rows.append(EnergyRow(id: "\(pid)", name: app.localizedName ?? L("Uygulama"), bundleID: app.bundleIdentifier,
                                   icon: app.icon, watts: watts, joules: 0))
         }
-        livePrev = next
+        // Energy counters move in bursts, so the live figure is the average since the page opened
+        // (first reading per program kept in livePrev).
+        livePrev = livePrev.filter { next[$0.key] != nil }
         liveEnergy = rows.sorted { $0.watts > $1.watts }
     }
 
@@ -634,8 +646,19 @@ final class Guardian: ObservableObject {
 
     struct Usage { let cpu: UInt64; let energy: UInt64 }
 
-    /// Processor time (ns) and billed energy (nJ) of a process, if we may read it.
+    /// Processor time (ns) and energy (nJ) of a process, if we may read it. Recent macOS
+    /// reports measured energy (`ri_energy_nj`, rusage v6); older systems fall back to v4.
     nonisolated static func usage(_ pid: pid_t) -> Usage? {
+        var v6 = rusage_info_v6()
+        let r6 = withUnsafeMutablePointer(to: &v6) { ptr -> Int32 in
+            ptr.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) {
+                proc_pid_rusage(pid, RUSAGE_INFO_V6, $0)
+            }
+        }
+        if r6 == 0 {
+            let cpu = (v6.ri_user_time + v6.ri_system_time) &* timebase.numer / timebase.denom
+            return Usage(cpu: cpu, energy: v6.ri_energy_nj)
+        }
         var info = rusage_info_v4()
         let r = withUnsafeMutablePointer(to: &info) { ptr -> Int32 in
             ptr.withMemoryRebound(to: rusage_info_t?.self, capacity: 1) {
@@ -644,7 +667,7 @@ final class Guardian: ObservableObject {
         }
         guard r == 0 else { return nil }
         let cpu = (info.ri_user_time + info.ri_system_time) &* timebase.numer / timebase.denom
-        return Usage(cpu: cpu, energy: info.ri_billed_energy)
+        return Usage(cpu: cpu, energy: 0)
     }
 
     nonisolated static func allPIDs() -> [pid_t] {
