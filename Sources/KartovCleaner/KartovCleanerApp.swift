@@ -46,6 +46,7 @@ struct RootView: View {
         .overlay { if model.showTutorial { TutorialView() } }
         .overlay { if model.showBackgroundQuestion { BackgroundQuestion() } }
         .overlay { AppMapOverlay() }
+        .overlay { if model.showLockedSheet { LockedCleanSheet() } }
         .overlay { UpdateOverlay() }
         .animation(KMotion.base, value: model.cleanAnimationStart)
         .animation(KMotion.base, value: model.showTutorial)

@@ -145,6 +145,15 @@ struct SectionBytes: Identifiable {
     var id: CategoryGroup { group }
 }
 
+/// An open program that holds caches chosen for cleaning.
+struct LockedApp: Identifiable {
+    let id: String
+    let name: String
+    let icon: NSImage?
+    var bytes: Int64
+    let app: NSRunningApplication
+}
+
 @MainActor
 final class AppModel: ObservableObject {
     @Published var section: AppSection = .dashboard
@@ -167,6 +176,10 @@ final class AppModel: ObservableObject {
     @Published var history: [CleanRecord] = []
     @Published var cleaningProgress: Double = 0
     @Published var openRecords: Set<UUID> = []
+    /// "Some programs are open" step before cleaning.
+    @Published var showLockedSheet = false
+    @Published var quittingForClean = false
+    @Published var lockedSheetMessage: String?
     /// Items of profile-protected groups the user chose to clean anyway (this session only).
     @Published var released: Set<String> = []
     private var profileWatch: AnyCancellable?
@@ -1108,7 +1121,69 @@ final class AppModel: ObservableObject {
 
     /// The Clean button: asks first when the Trash would be emptied or personal files moved.
     func requestClean() {
-        if confirmBytes > 0 || selectedUserFileBytes > 0 { showConfirm = true } else { clean() }
+        // Programs may have opened since the scan: look again before promising a number.
+        refreshLocks()
+        if lockedSelectedBytes > 0 && !lockedApps.isEmpty {
+            lockedSheetMessage = nil
+            showLockedSheet = true
+            return
+        }
+        proceedClean()
+    }
+
+    /// The usual path once open programs are dealt with: ask about the Trash, history and
+    /// personal files when needed, otherwise clean right away.
+    func proceedClean() {
+        showLockedSheet = false
+        guard selectedBytes > 0 else { return }
+        if confirmBytes > 0 || selectedUserFileBytes > 0 {
+            section = .results          // the question is asked on the results screen
+            showConfirm = true
+        } else {
+            clean()
+        }
+    }
+
+    /// Chosen items that cannot be cleaned now because their program is open.
+    var lockedSelectedBytes: Int64 { items.filter { $0.locked && !isKept($0) }.reduce(0) { $0 + $1.size } }
+
+    /// Open programs holding chosen items, with how much each holds.
+    var lockedApps: [LockedApp] {
+        var out: [String: LockedApp] = [:]
+        for g in groups {
+            let bytes = g.parts.filter { $0.locked && !$0.kept }.reduce(Int64(0)) { $0 + $1.size }
+            guard bytes > 0 else { continue }
+            for app in blockingApps(for: g) {
+                guard let id = app.bundleIdentifier else { continue }
+                var e = out[id] ?? LockedApp(id: id, name: app.localizedName ?? g.title, icon: app.icon, bytes: 0, app: app)
+                e.bytes += bytes
+                out[id] = e
+            }
+        }
+        return out.values.sorted { $0.bytes > $1.bytes }
+    }
+
+    /// Closes the programs that hold chosen caches (each may ask to save first), then cleans.
+    func quitLockedAppsAndClean() {
+        let apps = lockedApps.map(\.app)
+        guard !apps.isEmpty else { proceedClean(); return }
+        quittingForClean = true
+        for app in apps { _ = app.terminate() }
+        Task {
+            for _ in 0..<20 {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                if apps.allSatisfy(\.isTerminated) { break }
+            }
+            // Give the programs a moment to let go of their cache files.
+            try? await Task.sleep(nanoseconds: 700_000_000)
+            quittingForClean = false
+            refreshLocks()
+            let still = apps.filter { !$0.isTerminated }.compactMap(\.localizedName)
+            if !still.isEmpty {
+                quitMessage = L("{0} kapanmadı; onun önbelleği bu sefer atlandı.", still.joined(separator: ", "))
+            }
+            proceedClean()
+        }
     }
 
     /// Cleans everything selected except the confirm-only items (keeps the Trash as it is).

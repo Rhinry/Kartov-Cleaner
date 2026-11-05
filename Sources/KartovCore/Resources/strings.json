@@ -786,7 +786,17 @@
   "İşlemciyi uzun süre çok fazla kullandı.": "Used far too much processor for a long time.",
   "ısınmış": "warm",
   "Şu an en çok enerji kullananlar": "Using the most energy now",
-  "şimdi {0}": "now {0}"
+  "şimdi {0}": "now {0}",
+  "{0} program açık": "{0} apps are open",
+  "Açıkken önbelleklerini kullandıkları için {0} temizlenemiyor.": "{0} can't be cleaned because these apps use their caches while open.",
+  "Kapatırsan": "If you quit them",
+  "Kapatmadan": "Without quitting",
+  "Programlar kapatılıyor… Kaydedilmemiş bir işin varsa program önce sorar.": "Quitting apps… An app asks first if you have unsaved work.",
+  "Programlar kapanmadan önce kaydedilmemiş işin varsa sorar. Temizlikten sonra yeniden açabilirsin.": "Apps ask about unsaved work before they quit. You can reopen them after cleaning.",
+  "Kapatmadan {0} temizle": "Clean {0} without quitting",
+  "Kapatmadan temizlenecek bir şey yok": "Nothing to clean without quitting",
+  "Hepsini kapat ve temizle": "Quit all and clean",
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} didn't quit; its cache was skipped this time."
  },
  "de": {
   "Uygulama": "App",
@@ -1575,7 +1585,17 @@
   "İşlemciyi uzun süre çok fazla kullandı.": "Hat den Prozessor lange viel zu stark genutzt.",
   "ısınmış": "warm",
   "Şu an en çok enerji kullananlar": "Aktuell größter Energieverbrauch",
-  "şimdi {0}": "jetzt {0}"
+  "şimdi {0}": "jetzt {0}",
+  "{0} program açık": "{0} Apps sind geöffnet",
+  "Açıkken önbelleklerini kullandıkları için {0} temizlenemiyor.": "{0} können nicht bereinigt werden, weil diese Apps ihre Caches nutzen, solange sie geöffnet sind.",
+  "Kapatırsan": "Wenn du sie beendest",
+  "Kapatmadan": "Ohne Beenden",
+  "Programlar kapatılıyor… Kaydedilmemiş bir işin varsa program önce sorar.": "Apps werden beendet … Bei ungesicherter Arbeit fragt die App zuerst nach.",
+  "Programlar kapanmadan önce kaydedilmemiş işin varsa sorar. Temizlikten sonra yeniden açabilirsin.": "Apps fragen vor dem Beenden nach ungesicherter Arbeit. Nach der Bereinigung kannst du sie wieder öffnen.",
+  "Kapatmadan {0} temizle": "{0} ohne Beenden bereinigen",
+  "Kapatmadan temizlenecek bir şey yok": "Ohne Beenden gibt es nichts zu bereinigen",
+  "Hepsini kapat ve temizle": "Alle beenden und bereinigen",
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} wurde nicht beendet; sein Cache wurde diesmal übersprungen."
  },
  "es": {
   "Uygulama": "App",
@@ -2364,6 +2384,16 @@
   "İşlemciyi uzun süre çok fazla kullandı.": "Usó demasiado procesador durante mucho tiempo.",
   "ısınmış": "caliente",
   "Şu an en çok enerji kullananlar": "Las que más energía usan ahora",
-  "şimdi {0}": "ahora {0}"
+  "şimdi {0}": "ahora {0}",
+  "{0} program açık": "{0} apps están abiertas",
+  "Açıkken önbelleklerini kullandıkları için {0} temizlenemiyor.": "No se pueden limpiar {0} porque estas apps usan sus cachés mientras están abiertas.",
+  "Kapatırsan": "Si las cierras",
+  "Kapatmadan": "Sin cerrarlas",
+  "Programlar kapatılıyor… Kaydedilmemiş bir işin varsa program önce sorar.": "Cerrando apps… Si tienes trabajo sin guardar, la app te preguntará antes.",
+  "Programlar kapanmadan önce kaydedilmemiş işin varsa sorar. Temizlikten sonra yeniden açabilirsin.": "Las apps preguntan por el trabajo sin guardar antes de cerrarse. Puedes volver a abrirlas después de limpiar.",
+  "Kapatmadan {0} temizle": "Limpiar {0} sin cerrarlas",
+  "Kapatmadan temizlenecek bir şey yok": "No hay nada que limpiar sin cerrarlas",
+  "Hepsini kapat ve temizle": "Cerrar todas y limpiar",
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} no se cerró; su caché se omitió esta vez."
  }
 }
