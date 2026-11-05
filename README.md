@@ -51,8 +51,8 @@
 ```bash
 git clone https://github.com/Rhinry/kartov-cleaner.git
 cd kartov-cleaner
-bash kur.sh        # builds, installs to ~/Applications and opens it
-bash dmg.sh        # optional: builds a DMG into the Dağıtım/ folder
+bash install.sh    # builds, installs to ~/Applications and opens it
+bash build-dmg.sh  # optional: builds a DMG into the dist/ folder
 ```
 
 Xcode or the Command Line Tools (`xcode-select --install`) are all you need.

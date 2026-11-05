@@ -1,9 +1,9 @@
 #!/bin/bash
-# Kartov Cleaner DMG'si: derler, imzalar, tasarımlı bir kurulum penceresi hazırlar
-# (arka plan, ikon yerleri, Applications kısayolu), varsa Apple noter onayı alır.
+# Builds the Kartov Cleaner DMG: compiles, signs, lays out an installer window
+# (background, icon positions, Applications shortcut) and notarizes it when a notary profile exists.
 set -u
 cd "$(dirname "$0")"
-pause() { [ -n "${KARTOV_NO_PAUSE:-}" ] && return; echo ""; echo "Kapatmak için bir tuşa bas…"; read -n 1; }
+pause() { [ -n "${KARTOV_NO_PAUSE:-}" ] && return; echo ""; echo "Press any key to close…"; read -n 1; }
 fail() { echo ""; echo "✗ $1"; [ -n "${2:-}" ] && tail -15 "$2"; pause; exit 1; }
 
 VERSION="$(tr -d ' \n' < VERSION 2>/dev/null)"
@@ -14,29 +14,29 @@ STAGE="$WORK/stage"
 mkdir -p "$STAGE"
 
 echo ""
-echo "▸ $NAME $VERSION için DMG hazırlanıyor"
-KARTOV_APP_DIR="$STAGE" KARTOV_NO_OPEN=1 bash ./kur.sh || fail "Derleme ya da imza olmadı (yukarıdaki satırlara bak)."
-source ./Paketleme/imza.sh
+echo "▸ Making the DMG for $NAME $VERSION"
+KARTOV_APP_DIR="$STAGE" KARTOV_NO_OPEN=1 bash ./install.sh || fail "Build or signing failed (see the lines above)."
+source ./Packaging/signing.sh
 
-# Kurulum penceresinin içeriği
+# Contents of the installer window
 ln -s /Applications "$STAGE/Applications"
 mkdir -p "$STAGE/.background"
-tiffutil -cathidpicheck Paketleme/arkaplan.png Paketleme/arkaplan@2x.png -out "$STAGE/.background/arkaplan.tiff" >/dev/null 2>&1 \
-  || cp Paketleme/arkaplan.png "$STAGE/.background/arkaplan.png"
+tiffutil -cathidpicheck Packaging/background.png Packaging/background@2x.png -out "$STAGE/.background/background.tiff" >/dev/null 2>&1 \
+  || cp Packaging/background.png "$STAGE/.background/background.png"
 BG="$(ls "$STAGE/.background" | head -1)"
 cp AppIcon.icns "$STAGE/.VolumeIcon.icns"
 
-echo "▸ Kurulum penceresi tasarlanıyor…"
+echo "▸ Laying out the installer window…"
 RW="$WORK/rw.dmg"
 hdiutil create -volname "$NAME" -srcfolder "$STAGE" -fs HFS+ -format UDRW -ov "$RW" >/tmp/kartov-dmg.log 2>&1 \
-  || fail "Disk görüntüsü oluşturulamadı." /tmp/kartov-dmg.log
+  || fail "Could not create the disk image." /tmp/kartov-dmg.log
 VOL="$(hdiutil attach -readwrite -noverify -noautoopen "$RW" 2>>/tmp/kartov-dmg.log | grep -o '/Volumes/.*$' | head -1)"
-[ -d "$VOL" ] || fail "Disk görüntüsü bağlanamadı." /tmp/kartov-dmg.log
+[ -d "$VOL" ] || fail "Could not mount the disk image." /tmp/kartov-dmg.log
 DISK="$(basename "$VOL")"
-SetFile -a C "$VOL" >/dev/null 2>&1 || true   # birim ikonu
+SetFile -a C "$VOL" >/dev/null 2>&1 || true   # volume icon
 
-# Finder penceresi: 660×420, araç çubuğu yok, iki ikon arka plandaki kutulara oturur.
-# İlk seferde macOS "Terminal, Finder'ı denetlemek istiyor" diye sorar: İzin Ver.
+# Finder window: 660×420, no toolbar, the two icons sit in the boxes drawn on the background.
+# The first time, macOS asks whether Terminal may control Finder: allow it.
 osascript >/tmp/kartov-finder.log 2>&1 <<APPLESCRIPT
 tell application "Finder"
   tell disk "$DISK"
@@ -60,41 +60,41 @@ tell application "Finder"
   end tell
 end tell
 APPLESCRIPT
-[ $? -eq 0 ] || echo "  (Pencere düzeni uygulanamadı; DMG yine de çalışır. Ayrıntı: /tmp/kartov-finder.log)"
+[ $? -eq 0 ] || echo "  (Window layout could not be applied; the DMG still works. Details: /tmp/kartov-finder.log)"
 sync
 hdiutil detach "$VOL" -quiet || hdiutil detach "$VOL" -force -quiet
 
-mkdir -p "Dağıtım"
-OUT="Dağıtım/$NAME $VERSION.dmg"
+mkdir -p "dist"
+OUT="dist/$NAME $VERSION.dmg"
 rm -f "$OUT"
 hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -o "$OUT" >>/tmp/kartov-dmg.log 2>&1 \
-  || fail "DMG sıkıştırılamadı." /tmp/kartov-dmg.log
+  || fail "Could not compress the DMG." /tmp/kartov-dmg.log
 rm -rf "$WORK"
 
 if [ -n "$IDENTITY" ]; then
-  echo "▸ DMG imzalanıyor…"
-  codesign --force --timestamp --sign "$IDENTITY" "$OUT" || fail "DMG imzalanamadı."
+  echo "▸ Signing the DMG…"
+  codesign --force --timestamp --sign "$IDENTITY" "$OUT" || fail "Could not sign the DMG."
   if has_notary_profile; then
-    echo "▸ Apple noter onayına gönderiliyor (birkaç dakika sürebilir)…"
+    echo "▸ Sending to Apple for notarization (this can take a few minutes)…"
     xcrun notarytool submit "$OUT" --keychain-profile "$NOTARY_PROFILE" --wait >/tmp/kartov-notary.log 2>&1
     if grep -q "status: Accepted" /tmp/kartov-notary.log; then
-      xcrun stapler staple "$OUT" >/dev/null 2>&1 && echo "✓ Noter onayı alındı; her Mac'te uyarısız açılır."
+      xcrun stapler staple "$OUT" >/dev/null 2>&1 && echo "✓ Notarized; it opens on any Mac without warnings."
     else
-      echo "✗ Noter onayı reddedildi. Ayrıntı için:"
+      echo "✗ Notarization was rejected. For details:"
       grep -E "id:|status:" /tmp/kartov-notary.log | head -4
       echo "  xcrun notarytool log <id> --keychain-profile $NOTARY_PROFILE"
     fi
   else
-    echo "! Noter profili yok: DMG imzalı ama noter onaysız."
+    echo "! No notary profile ($NOTARY_PROFILE): the DMG is signed but not notarized."
   fi
 else
-  echo "! Developer ID sertifikası yok: DMG yerel imzalı. Başka Mac'lerde 'doğrulanamadı' uyarısı çıkar."
-fi
+  echo "! No Developer ID certificate: the DMG is ad-hoc signed. Other Macs will show a \"cannot be verified\" warning."
+  fi
 
-shasum -a 256 "$OUT" | awk '{print $1}' > "$OUT.sha256"   # güncelleyici bununla doğrular
+shasum -a 256 "$OUT" | awk '{print $1}' > "$OUT.sha256"   # the in-app updater checks this
 
 echo ""
-echo "✓ Hazır: $(pwd)/$OUT"
+echo "✓ Ready: $(pwd)/$OUT"
 [ -z "${KARTOV_NO_PAUSE:-}" ] && open -R "$OUT"
 [ -z "${KARTOV_NO_PAUSE:-}" ] && pause
 exit 0

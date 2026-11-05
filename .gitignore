@@ -1,6 +1,6 @@
 .build/
 .swiftpm/
 .DS_Store
-Dağıtım/*.dmg
-Dağıtım/*.sha256
+dist/*.dmg
+dist/*.sha256
 *.xcodeproj/xcuserdata/

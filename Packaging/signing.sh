@@ -1,9 +1,9 @@
-# Ortak: Developer ID imza kimliğini ve noter profilini bulur. kur.sh ve dmg.sh "source" eder.
+# Shared by install.sh and build-dmg.sh: finds a Developer ID signing identity and the notary profile.
 NOTARY_PROFILE="kartov-notary"
 ENTITLEMENTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/Kartov.entitlements"
 IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null | grep -o '"Developer ID Application: [^"]*"' | head -1 | tr -d '"')"
 
-# İmzalar: Developer ID varsa onunla (hardened runtime + zaman damgası), yoksa yerel ad-hoc imza.
+# Signs with the Developer ID if there is one (hardened runtime + timestamp), otherwise ad-hoc.
 sign_app() {
   local app="$1"
   if [ -n "$IDENTITY" ]; then
