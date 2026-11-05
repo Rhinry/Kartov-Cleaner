@@ -11,11 +11,11 @@ struct SettingsView: View {
                 Text(L("Ayarlar")).font(.system(size: 26, weight: .bold))
                 HStack(alignment: .top, spacing: 16) {
                     VStack(spacing: 16) {
+                        UpdateSettingsCard()
                         generalCard
                         cleaningCard
                     }
                     VStack(spacing: 16) {
-                        UpdateSettingsCard()
                         permissionsCard
                         dataCard
                         aboutCard

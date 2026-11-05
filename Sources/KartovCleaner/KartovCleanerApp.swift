@@ -139,6 +139,7 @@ struct TopBar: View {
                 Color.clear.frame(width: 70, height: 1)   // red / yellow / green window buttons
                 KartovBrand()
                 Spacer(minLength: 0)
+                UpdateTopButton()
                 Button { model.openTutorial() } label: {
                     Image(systemName: "questionmark.circle").font(.system(size: 14))
                         .foregroundStyle(KColor.textMuted).frame(width: 26, height: 26).contentShape(Rectangle())

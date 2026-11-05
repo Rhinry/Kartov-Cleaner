@@ -103,7 +103,7 @@ final class Updater: NSObject, ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: req)
             let code = (response as? HTTPURLResponse)?.statusCode ?? 0
             lastCheck = Date()
-            if code == 404 { phase = .upToDate; release = nil; return }   // no release published yet
+            if code == 404 { phase = .upToDate; release = nil; resetUpToDateLater(); return }   // no release published yet
             guard code == 200, let found = Self.parse(data) else {
                 phase = userInitiated ? .failed(L("GitHub'a ulaşılamadı. Biraz sonra yeniden dene.")) : .idle
                 return
@@ -111,6 +111,7 @@ final class Updater: NSObject, ObservableObject {
             guard Self.isNewer(found.version, than: currentVersion) else {
                 release = nil
                 phase = .upToDate
+                resetUpToDateLater()
                 return
             }
             if !userInitiated, found.version == skippedVersion { phase = .idle; return }
@@ -121,6 +122,14 @@ final class Updater: NSObject, ObservableObject {
             if userInitiated { showSheet = true } else if isNew { notify(found) }
         } catch {
             phase = userInitiated ? .failed(L("GitHub'a ulaşılamadı. Biraz sonra yeniden dene.")) : .idle
+            if userInitiated { showSheet = true }
+        }
+    }
+
+    /// "Up to date" shows for a few seconds, then the button goes back to "Check for updates".
+    private func resetUpToDateLater() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
+            if self?.phase == .upToDate { self?.phase = .idle }
         }
     }
 

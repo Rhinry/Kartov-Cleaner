@@ -132,6 +132,8 @@ final class StatusBar: NSObject {
         let menu = NSMenu()
         if let r = Updater.shared.release {
             menu.addItem(entry(L("Güncelleme var: {0}", r.version), #selector(showUpdate)))
+        } else {
+            menu.addItem(entry(L("Güncellemeleri denetle…"), #selector(checkUpdates)))
         }
         menu.addItem(entry(L("Kartov'u aç"), #selector(openApp)))
         menu.addItem(.separator())
@@ -173,6 +175,10 @@ final class StatusBar: NSObject {
         } else {
             model?.openMainWindow?()
         }
+    }
+    @objc private func checkUpdates() {
+        openApp()
+        Task { await Updater.shared.check(userInitiated: true) }
     }
     @objc private func showUpdate() {
         openApp()

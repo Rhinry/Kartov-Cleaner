@@ -574,7 +574,15 @@
   "Denetle": "Check",
   "En son sürümü kullanıyorsun.": "You're on the latest version.",
   "{0} sürümü hazır.": "Version {0} is ready.",
-  "Son denetim: {0}": "Last checked: {0}"
+  "Son denetim: {0}": "Last checked: {0}",
+  "Yenilikleri gör ve güncelle": "See what's new and update",
+  "GitHub'da yeni sürüm var mı bak": "Check GitHub for a new version",
+  "{0} hazır": "{0} is ready",
+  "Denetleniyor…": "Checking…",
+  "Güncel · v{0}": "Up to date · v{0}",
+  "v{0} · Güncellemeleri denetle": "v{0} · Check for updates",
+  "Güncellemeleri denetle…": "Check for updates…",
+  "Güncelleme denetlenemedi": "Couldn't check for updates"
  },
  "de": {
   "Uygulama": "App",
@@ -1151,7 +1159,15 @@
   "Denetle": "Prüfen",
   "En son sürümü kullanıyorsun.": "Du nutzt die neueste Version.",
   "{0} sürümü hazır.": "Version {0} ist bereit.",
-  "Son denetim: {0}": "Zuletzt geprüft: {0}"
+  "Son denetim: {0}": "Zuletzt geprüft: {0}",
+  "Yenilikleri gör ve güncelle": "Neuerungen ansehen und aktualisieren",
+  "GitHub'da yeni sürüm var mı bak": "Auf GitHub nach einer neuen Version suchen",
+  "{0} hazır": "{0} ist bereit",
+  "Denetleniyor…": "Wird geprüft…",
+  "Güncel · v{0}": "Aktuell · v{0}",
+  "v{0} · Güncellemeleri denetle": "v{0} · Nach Updates suchen",
+  "Güncellemeleri denetle…": "Nach Updates suchen…",
+  "Güncelleme denetlenemedi": "Update-Prüfung fehlgeschlagen"
  },
  "es": {
   "Uygulama": "App",
@@ -1728,6 +1744,14 @@
   "Denetle": "Comprobar",
   "En son sürümü kullanıyorsun.": "Tienes la última versión.",
   "{0} sürümü hazır.": "La versión {0} está lista.",
-  "Son denetim: {0}": "Última comprobación: {0}"
+  "Son denetim: {0}": "Última comprobación: {0}",
+  "Yenilikleri gör ve güncelle": "Ver novedades y actualizar",
+  "GitHub'da yeni sürüm var mı bak": "Buscar una versión nueva en GitHub",
+  "{0} hazır": "{0} está lista",
+  "Denetleniyor…": "Comprobando…",
+  "Güncel · v{0}": "Al día · v{0}",
+  "v{0} · Güncellemeleri denetle": "v{0} · Buscar actualizaciones",
+  "Güncellemeleri denetle…": "Buscar actualizaciones…",
+  "Güncelleme denetlenemedi": "No se pudo comprobar si hay actualizaciones"
  }
 }

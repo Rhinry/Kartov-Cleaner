@@ -104,6 +104,7 @@ struct UpdateSheet: View {
 
     private var title: String {
         if let r = updater.release { return L("Kartov Cleaner {0} hazır", r.version) }
+        if case .failed = updater.phase { return L("Güncelleme denetlenemedi") }
         return L("Kartov Cleaner güncel")
     }
 
@@ -162,5 +163,61 @@ struct UpdateSettingsCard: View {
         case .failed(let m): return m
         default: return updater.lastCheck.map { L("Son denetim: {0}", relativeDay($0)) }
         }
+    }
+}
+
+/// Always-visible update control in the top bar, next to help and settings.
+/// Idle: "v0.3 · Check for updates". Checking: spinner. Up to date: green tick for a moment.
+/// New version: a blue pill "0.4 ready" that opens the update window.
+struct UpdateTopButton: View {
+    @ObservedObject var updater = Updater.shared
+
+    var body: some View {
+        Button(action: tap) {
+            HStack(spacing: 6) {
+                icon
+                Text(label).font(.system(size: 12, weight: updater.release != nil ? .semibold : .medium))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 10).frame(height: 26)
+            .foregroundStyle(updater.release != nil ? Color.white : (isUpToDate ? KColor.success : KColor.textMuted))
+            .background(
+                Capsule().fill(updater.release != nil ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(KColor.surface.opacity(0.7)))
+            )
+            .overlay(Capsule().strokeBorder(updater.release != nil ? Color.clear : KColor.border))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(updater.phase == .checking || updater.repo == nil)
+        .help(updater.release != nil ? L("Yenilikleri gör ve güncelle") : L("GitHub'da yeni sürüm var mı bak"))
+        .animation(KMotion.base, value: updater.phase)
+    }
+
+    private var isUpToDate: Bool { updater.phase == .upToDate }
+
+    @ViewBuilder private var icon: some View {
+        if updater.phase == .checking {
+            ProgressView().controlSize(.mini)
+        } else if updater.release != nil {
+            Image(systemName: "arrow.down.circle.fill").font(.system(size: 13, weight: .semibold))
+        } else if isUpToDate {
+            Image(systemName: "checkmark.circle.fill").font(.system(size: 13))
+        } else {
+            Image(systemName: "arrow.triangle.2.circlepath").font(.system(size: 12, weight: .semibold))
+        }
+    }
+
+    private var label: String {
+        if let r = updater.release { return L("{0} hazır", r.version) }
+        switch updater.phase {
+        case .checking: return L("Denetleniyor…")
+        case .upToDate: return L("Güncel · v{0}", updater.currentVersion)
+        default: return L("v{0} · Güncellemeleri denetle", updater.currentVersion)
+        }
+    }
+
+    private func tap() {
+        if updater.release != nil { updater.showSheet = true; return }
+        Task { await updater.check(userInitiated: true) }
     }
 }
