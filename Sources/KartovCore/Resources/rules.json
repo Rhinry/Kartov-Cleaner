@@ -1,0 +1,813 @@
+{
+  "version": 6,
+  "rules": [
+    {
+      "id": "creative.ae.disk",
+      "name": "Disk önbelleği",
+      "group": "creative",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Adobe/After Effects"
+      ],
+      "itemLevel": "children",
+      "appGroup": "After Effects",
+      "blockIfRunning": [
+        "com.adobe.AfterEffects"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Önizleme ve render sırasında kaydedilen kareler. Projelerin bu dosyalara bağlı değildir; önizleme ilk seferde yeniden hesaplanır."
+    },
+    {
+      "id": "creative.adobe.mediacache.files",
+      "name": "Media Cache dosyaları",
+      "group": "creative",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Application Support/Adobe/Common/Media Cache Files"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Adobe medya önbelleği",
+      "blockIfRunning": [
+        "com.adobe.AfterEffects",
+        "com.adobe.PremierePro",
+        "com.adobe.ame",
+        "com.adobe.Audition"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "İçe aktarılan video ve seslerin hızlı kopyaları (.cfa, .pek). Silinince Adobe uygulamaları medyayı açarken yeniden oluşturur."
+    },
+    {
+      "id": "creative.adobe.mediacache.db",
+      "name": "Media Cache veritabanı",
+      "group": "creative",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Application Support/Adobe/Common/Media Cache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Adobe medya önbelleği",
+      "blockIfRunning": [
+        "com.adobe.AfterEffects",
+        "com.adobe.PremierePro",
+        "com.adobe.ame",
+        "com.adobe.Audition"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Media Cache dosyalarının dizini. Dosyalarla birlikte silinmesi önerilir."
+    },
+    {
+      "id": "creative.adobe.other",
+      "name": "Diğer Adobe önbellekleri",
+      "group": "creative",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Adobe"
+      ],
+      "itemLevel": "children",
+      "exclude": [
+        "After Effects"
+      ],
+      "appGroup": "Adobe",
+      "blockIfRunning": [
+        "com.adobe."
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Creative Cloud ve diğer Adobe uygulamalarının geçici dosyaları."
+    },
+    {
+      "id": "creative.resolve.cacheclip",
+      "name": "CacheClip (render önbelleği)",
+      "group": "creative",
+      "safety": "safe",
+      "roots": [
+        "~/Movies/CacheClip"
+      ],
+      "itemLevel": "root",
+      "appGroup": "DaVinci Resolve",
+      "blockIfRunning": [
+        "com.blackmagic-design.DaVinciResolve"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "DaVinci Resolve'un optimize edilmiş medya ve render önbelleği. Proje açılınca gerekirse yeniden oluşturulur."
+    },
+    {
+      "id": "browser.chrome",
+      "name": "Önbellek",
+      "group": "browsers",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Google/Chrome",
+        "~/Library/Application Support/Google/Chrome/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/Google/Chrome/*/Code Cache",
+        "~/Library/Application Support/Google/Chrome/*/GPUCache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Google Chrome",
+      "blockIfRunning": [
+        "com.google.Chrome"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Ziyaret ettiğin sitelerin geçici kopyaları. Geçmiş, çerezler, şifreler ve oturumlar silinmez."
+    },
+    {
+      "id": "browser.firefox",
+      "name": "Önbellek",
+      "group": "browsers",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Firefox"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Firefox",
+      "blockIfRunning": [
+        "org.mozilla.firefox"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Ziyaret ettiğin sitelerin geçici kopyaları. Geçmiş, çerezler ve oturumlar silinmez."
+    },
+    {
+      "id": "browser.brave",
+      "name": "Önbellek",
+      "group": "browsers",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/BraveSoftware",
+        "~/Library/Application Support/BraveSoftware/Brave-Browser/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/BraveSoftware/Brave-Browser/*/Code Cache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Brave",
+      "blockIfRunning": [
+        "com.brave.Browser"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Ziyaret ettiğin sitelerin geçici kopyaları. Geçmiş, çerezler ve oturumlar silinmez."
+    },
+    {
+      "id": "browser.edge",
+      "name": "Önbellek",
+      "group": "browsers",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Microsoft Edge",
+        "~/Library/Application Support/Microsoft Edge/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/Microsoft Edge/*/Code Cache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Microsoft Edge",
+      "blockIfRunning": [
+        "com.microsoft.edgemac"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Ziyaret ettiğin sitelerin geçici kopyaları. Geçmiş, çerezler ve oturumlar silinmez."
+    },
+    {
+      "id": "browser.safari",
+      "name": "Önbellek",
+      "group": "browsers",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/com.apple.Safari",
+        "~/Library/Containers/com.apple.Safari/Data/Library/Caches"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Safari",
+      "blockIfRunning": [
+        "com.apple.Safari"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Ziyaret ettiğin sitelerin geçici kopyaları. Okunması için Tam Disk Erişimi gerekir."
+    },
+    {
+      "id": "apps.spotify",
+      "name": "Müzik önbelleği",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Application Support/Spotify/PersistentCache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Spotify",
+      "blockIfRunning": [
+        "com.spotify.client"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Dinlediğin şarkıların geçici kopyaları. Çevrimdışı indirdiğin listeler ayrı tutulur; silinmez."
+    },
+    {
+      "id": "dev.pkgcaches",
+      "name": "İndirme önbellekleri",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches"
+      ],
+      "itemLevel": "children",
+      "include": [
+        "Homebrew",
+        "pip",
+        "Yarn",
+        "CocoaPods",
+        "go-build",
+        "node-gyp",
+        "ms-playwright",
+        "JetBrains",
+        "pnpm",
+        "deno",
+        "electron",
+        "electron-builder",
+        "typescript"
+      ],
+      "appGroup": "Yazılım araçları",
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Paket yöneticilerinin indirdiği dosyaların kopyaları. Gerekince yeniden indirilir."
+    },
+    {
+      "id": "dev.npm",
+      "name": "npm önbelleği",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/.npm/_cacache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Yazılım araçları",
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "npm'in indirdiği paketlerin kopyaları. Gerekince yeniden indirilir."
+    },
+    {
+      "id": "dev.gradle",
+      "name": "Gradle önbellekleri",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/.gradle/caches",
+        "~/.gradle/daemon"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Android Studio",
+      "blockIfRunning": [
+        "com.google.android.studio"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Gradle'ın derleme ve bağımlılık önbellekleri. İlk derleme biraz uzun sürer."
+    },
+    {
+      "id": "dev.gradle.wrapper",
+      "name": "Eski Gradle sürümleri",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/.gradle/wrapper/dists"
+      ],
+      "itemLevel": "children",
+      "minAgeDays": 30,
+      "appGroup": "Android Studio",
+      "blockIfRunning": [
+        "com.google.android.studio"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "30 günden uzun süredir kullanılmayan Gradle dağıtımları. Bir proje isterse yeniden indirilir."
+    },
+    {
+      "id": "dev.android.cache",
+      "name": "Android önbelleği",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/.android/cache"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Android Studio",
+      "blockIfRunning": [
+        "com.google.android.studio"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Android SDK'nın geçici dosyaları. Emülatörler ve SDK'nın kendisi silinmez."
+    },
+    {
+      "id": "dev.google.caches",
+      "name": "Android Studio ve Google araçları",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches/Google"
+      ],
+      "itemLevel": "children",
+      "exclude": [
+        "Chrome"
+      ],
+      "appGroup": "Android Studio",
+      "blockIfRunning": [
+        "com.google.android.studio"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Android Studio'nun indeks ve geçici dosyaları. Projeyi ilk açışta yeniden oluşturur."
+    },
+    {
+      "id": "dev.xcode.deriveddata",
+      "name": "DerivedData",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Developer/Xcode/DerivedData"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Xcode",
+      "blockIfRunning": [
+        "com.apple.dt.Xcode"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Xcode'un ara derleme dosyaları. Bir sonraki derlemede yeniden oluşturulur."
+    },
+    {
+      "id": "dev.xcode.devicesupport",
+      "name": "Eski cihaz destek dosyaları",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Developer/Xcode/iOS DeviceSupport",
+        "~/Library/Developer/Xcode/watchOS DeviceSupport"
+      ],
+      "itemLevel": "children",
+      "minAgeDays": 60,
+      "appGroup": "Xcode",
+      "blockIfRunning": [
+        "com.apple.dt.Xcode"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "60 günden uzun süredir bağlanmayan cihaz sürümleri için dosyalar. Cihaz bağlanınca yeniden hazırlanır."
+    },
+    {
+      "id": "dev.coresim.caches",
+      "name": "Simülatör önbellekleri",
+      "group": "developer",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Developer/CoreSimulator/Caches"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Xcode",
+      "blockIfRunning": [
+        "com.apple.dt.Xcode",
+        "com.apple.iphonesimulator"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Simülatörlerin geçici dosyaları. Simülatörler ve içindeki uygulamalar silinmez."
+    },
+    {
+      "id": "dev.xcode.archives",
+      "name": "Arşivler",
+      "group": "developer",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Developer/Xcode/Archives"
+      ],
+      "itemLevel": "children",
+      "appGroup": "Xcode",
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "Yayınlanmış uygulama arşivleri. Çökme raporlarını çözmek için gerekebilir; önce çöp kutusuna gider."
+    },
+    {
+      "id": "apple.caches",
+      "name": "Önbellek",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches"
+      ],
+      "itemLevel": "children",
+      "include": [
+        "com.apple.dt.*",
+        "com.apple.Music",
+        "com.apple.podcasts",
+        "com.apple.helpd",
+        "com.apple.appstore",
+        "com.apple.python",
+        "com.apple.iTunes",
+        "com.apple.Maps",
+        "com.apple.news"
+      ],
+      "childIsBundleID": true,
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Apple uygulamalarının geçici dosyaları. Yalnızca güvenle silinebildiği bilinenler listelenir."
+    },
+    {
+      "id": "user.caches",
+      "name": "Önbellek",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Caches"
+      ],
+      "itemLevel": "children",
+      "exclude": [
+        "com.apple.*",
+        "Adobe",
+        "Google",
+        "Firefox",
+        "BraveSoftware",
+        "Microsoft Edge",
+        "com.kartov.*",
+        "CloudKit",
+        "FamilyCircle",
+        "GeoServices",
+        "Homebrew",
+        "pip",
+        "Yarn",
+        "CocoaPods",
+        "go-build",
+        "node-gyp",
+        "ms-playwright",
+        "JetBrains",
+        "pnpm",
+        "deno",
+        "electron",
+        "electron-builder",
+        "typescript",
+        "*.lock"
+      ],
+      "childIsBundleID": true,
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Uygulamanın daha hızlı açılmak için tuttuğu geçici kopyalar. Silinince gerektiğinde yeniden oluşturulur; ilk açılış birkaç saniye yavaş olabilir."
+    },
+    {
+      "id": "apps.sandbox.caches",
+      "name": "Önbellek (sandbox)",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Containers/*/Data/Library/Caches"
+      ],
+      "itemLevel": "root",
+      "appKeyFromGlob": true,
+      "appKeyIsBundleID": true,
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "App Store uygulamalarının kendi kutusundaki önbellek klasörü. Belgeler ve ayarlar bu klasörde değildir.",
+      "exclude": [
+        "com.apple.*"
+      ]
+    },
+    {
+      "id": "apps.group.caches",
+      "name": "Paylaşılan önbellek",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Group Containers/*/Library/Caches"
+      ],
+      "itemLevel": "root",
+      "appKeyFromGlob": true,
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Bir uygulama ailesinin (ör. WhatsApp, Telegram, Office) ortak önbellek klasörü. Sohbetler ve belgeler bu klasörde değildir.",
+      "exclude": [
+        "com.apple.*",
+        "group.com.apple.*",
+        "*.com.apple.*"
+      ]
+    },
+    {
+      "id": "apps.appsupport.caches",
+      "name": "Gizli önbellek",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Application Support/*/Cache",
+        "~/Library/Application Support/*/Code Cache",
+        "~/Library/Application Support/*/GPUCache",
+        "~/Library/Application Support/*/Service Worker/CacheStorage",
+        "~/Library/Application Support/*/Partitions/*/Cache"
+      ],
+      "itemLevel": "root",
+      "appKeyFromGlob": true,
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Programın kendi klasöründe tuttuğu geçici dosyalar. Oturumların ve mesajların silinmez.",
+      "exclude": [
+        "com.apple.*",
+        "Google",
+        "BraveSoftware",
+        "Microsoft Edge",
+        "Spotify",
+        "Adobe",
+        "Firefox"
+      ]
+    },
+    {
+      "id": "apps.mail.downloads",
+      "name": "Açılmış e-posta ekleri",
+      "group": "apps",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Containers/com.apple.mail/Data/Library/Mail Downloads"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Mail",
+      "blockIfRunning": [
+        "com.apple.mail"
+      ],
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Mail'de açtığın eklerin geçici kopyaları. E-postaların ve ekleri posta kutunda kalır."
+    },
+    {
+      "id": "logs.user",
+      "name": "Eski kayıt dosyaları ve hata raporları",
+      "group": "logs",
+      "safety": "safe",
+      "roots": [
+        "~/Library/Logs"
+      ],
+      "itemLevel": "children",
+      "exclude": [
+        "Kartov*"
+      ],
+      "minAgeDays": 7,
+      "appGroup": "Kayıt dosyaları",
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Uygulamaların tuttuğu kayıt dosyaları. Son 7 güne dokunulmaz."
+    },
+    {
+      "id": "temp.user",
+      "name": "Eski geçici dosyalar",
+      "group": "logs",
+      "safety": "safe",
+      "roots": [
+        "$TMPDIR"
+      ],
+      "itemLevel": "children",
+      "exclude": [
+        "com.apple.*",
+        "TemporaryItems",
+        "*.sock",
+        "kartov-test-*"
+      ],
+      "minAgeDays": 3,
+      "appGroup": "Geçici dosyalar",
+      "defaultOn": true,
+      "mode": "delete",
+      "description": "Uygulamaların geçici klasörde bıraktığı, 3 günden eski dosyalar."
+    },
+    {
+      "id": "updates.macos.installers",
+      "name": "Eski macOS yükleyicileri",
+      "group": "updates",
+      "safety": "caution",
+      "roots": [
+        "/Applications"
+      ],
+      "itemLevel": "children",
+      "include": [
+        "Install macOS*.app"
+      ],
+      "appGroup": "Eski kurulum dosyaları",
+      "blockIfRunning": [
+        "com.apple.InstallAssistant"
+      ],
+      "defaultOn": true,
+      "mode": "trash",
+      "description": "Kurulumu bitmiş macOS yükleyicileri. Tanesi 12–15 GB. Önce çöp kutusuna gider."
+    },
+    {
+      "id": "updates.ios.ipsw",
+      "name": "iPhone ve iPad yazılım güncellemeleri",
+      "group": "updates",
+      "safety": "caution",
+      "roots": [
+        "~/Library/iTunes/iPhone Software Updates",
+        "~/Library/iTunes/iPad Software Updates"
+      ],
+      "itemLevel": "children",
+      "include": [
+        "*.ipsw"
+      ],
+      "appGroup": "Eski kurulum dosyaları",
+      "defaultOn": true,
+      "mode": "trash",
+      "description": "Cihaz güncellemesi için indirilmiş IPSW dosyaları. Güncelleme bittikten sonra gerekmez."
+    },
+    {
+      "id": "updates.downloads.installers",
+      "name": "İndirilenler'deki eski yükleyiciler",
+      "group": "updates",
+      "safety": "caution",
+      "roots": [
+        "~/Downloads"
+      ],
+      "itemLevel": "children",
+      "include": [
+        "*.dmg",
+        "*.pkg",
+        "*.iso",
+        "*.xip",
+        "*.mpkg"
+      ],
+      "minAgeDays": 14,
+      "appGroup": "Eski kurulum dosyaları",
+      "defaultOn": true,
+      "mode": "trash",
+      "description": "14 günden eski .dmg, .pkg ve .iso dosyaları. Uygulama kurulduktan sonra genellikle gerekmez; önce çöp kutusuna gider."
+    },
+    {
+      "id": "backups.ios",
+      "name": "iPhone ve iPad yedekleri",
+      "group": "updates",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Application Support/MobileSync/Backup"
+      ],
+      "itemLevel": "children",
+      "appGroup": "iPhone ve iPad yedekleri",
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "Finder ile alınmış cihaz yedekleri. Tek yedeğin buysa silme; önce çöp kutusuna gider."
+    },
+    {
+      "id": "trash.user",
+      "name": "Çöp kutusu",
+      "group": "trash",
+      "safety": "caution",
+      "roots": [
+        "~/.Trash"
+      ],
+      "itemLevel": "children",
+      "appGroup": "Çöp kutusu",
+      "defaultOn": true,
+      "mode": "delete",
+      "confirm": true,
+      "description": "Çöp kutusundaki her şey kalıcı olarak silinir. Temizlikten önce onay istenir."
+    },
+    {
+      "id": "privacy.chrome.history",
+      "name": "Geçmiş",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Application Support/Google/Chrome/*/History",
+        "~/Library/Application Support/Google/Chrome/*/History-journal"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Google Chrome",
+      "blockIfRunning": [
+        "com.google.Chrome"
+      ],
+      "defaultOn": true,
+      "mode": "trash",
+      "description": "Ziyaret ettiğin sitelerin ve indirmelerin listesi. Yer imleri ve şifreler silinmez.",
+      "confirm": true
+    },
+    {
+      "id": "privacy.chrome.cookies",
+      "name": "Çerezler",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Application Support/Google/Chrome/*/Cookies",
+        "~/Library/Application Support/Google/Chrome/*/Cookies-journal"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Google Chrome",
+      "blockIfRunning": [
+        "com.google.Chrome"
+      ],
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "Sitelerin seni hatırladığı dosyalar. Silinirse tüm sitelerden çıkış yaparsın."
+    },
+    {
+      "id": "privacy.safari.history",
+      "name": "Geçmiş",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Safari/History.db",
+        "~/Library/Safari/History.db-wal",
+        "~/Library/Safari/History.db-shm"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Safari",
+      "blockIfRunning": [
+        "com.apple.Safari"
+      ],
+      "defaultOn": true,
+      "mode": "trash",
+      "description": "Safari'de ziyaret ettiğin sitelerin listesi. Yer imleri ve okuma listesi silinmez.",
+      "confirm": true
+    },
+    {
+      "id": "privacy.brave.history",
+      "name": "Geçmiş",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Application Support/BraveSoftware/Brave-Browser/*/History",
+        "~/Library/Application Support/BraveSoftware/Brave-Browser/*/History-journal"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Brave",
+      "blockIfRunning": [
+        "com.brave.Browser"
+      ],
+      "defaultOn": true,
+      "confirm": true,
+      "mode": "trash",
+      "description": "Ziyaret ettiğin sitelerin ve indirmelerin listesi. Yer imleri ve şifreler silinmez."
+    },
+    {
+      "id": "privacy.edge.history",
+      "name": "Geçmiş",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Application Support/Microsoft Edge/*/History",
+        "~/Library/Application Support/Microsoft Edge/*/History-journal"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Microsoft Edge",
+      "blockIfRunning": [
+        "com.microsoft.edgemac"
+      ],
+      "defaultOn": true,
+      "confirm": true,
+      "mode": "trash",
+      "description": "Ziyaret ettiğin sitelerin ve indirmelerin listesi. Yer imleri ve şifreler silinmez."
+    },
+    {
+      "id": "privacy.safari.cookies",
+      "name": "Çerezler",
+      "group": "privacy",
+      "safety": "caution",
+      "roots": [
+        "~/Library/Containers/com.apple.Safari/Data/Library/Cookies/Cookies.binarycookies"
+      ],
+      "itemLevel": "root",
+      "appGroup": "Safari",
+      "blockIfRunning": [
+        "com.apple.Safari"
+      ],
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "Sitelerin seni hatırladığı dosya. Silinirse tüm sitelerden çıkış yaparsın."
+    },
+    {
+      "id": "user.downloads.old",
+      "name": "İndirilenler'de 30 günden eski",
+      "group": "userFiles",
+      "safety": "caution",
+      "roots": [
+        "~/Downloads"
+      ],
+      "itemLevel": "children",
+      "minAgeDays": 30,
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "30 günden uzun süredir dokunulmamış indirmeler. Kartov hiçbirini kendiliğinden seçmez; seçtiklerin çöp kutusuna gider."
+    },
+    {
+      "id": "user.largefiles",
+      "name": "500 MB'tan büyük dosyalar",
+      "group": "userFiles",
+      "safety": "caution",
+      "roots": [
+        "~/Desktop",
+        "~/Documents",
+        "~/Downloads",
+        "~/Movies",
+        "~/Music",
+        "~/Pictures",
+        "/Users/Shared"
+      ],
+      "itemLevel": "largeFiles",
+      "minSizeMB": 500,
+      "defaultOn": false,
+      "mode": "trash",
+      "description": "Bilgisayarındaki büyük dosyalar. Fotoğraflar arşivinin, Final Cut ve iMovie kütüphanelerinin ve uygulama paketlerinin içine bakılmaz. Kartov hiçbirini kendiliğinden seçmez."
+    }
+  ]
+}
