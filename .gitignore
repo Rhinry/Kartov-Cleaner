@@ -4,3 +4,4 @@
 dist/*.dmg
 dist/*.sha256
 *.xcodeproj/xcuserdata/
+*.p12

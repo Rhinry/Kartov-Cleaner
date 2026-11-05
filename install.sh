@@ -82,7 +82,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 PLIST
 
 source ./Packaging/signing.sh
-if [ -n "$IDENTITY" ]; then echo "▸ Signing: $IDENTITY"; else echo "▸ Ad-hoc signing (no Developer ID certificate)"; fi
+echo "▸ Signing: $(signing_label)"
 sign_app "$APP" >/tmp/kartov-sign.log 2>&1 || { echo "✗ Signing failed:"; tail -8 /tmp/kartov-sign.log; exit 1; }
 touch "$APP"   # so Finder and the Dock pick up the icon
 

@@ -269,14 +269,27 @@ final class Updater: NSObject, ObservableObject {
             return .failure(UpdateError(message: L("Güncelleme dosyasında uygulama bulunamadı.")))
         }
         let newApp = (mount as NSString).appendingPathComponent(appName)
-        // The new app must be validly signed; if this copy has a Developer ID team, the new one must have the same.
-        let verify = run("/usr/bin/codesign", ["--verify", "--deep", "--strict", newApp])
+        // The new app must be validly signed. If this copy is signed with a certificate (Developer ID or the
+        // persistent local one), the new one must be signed with the very same certificate.
+        let verify = run("/usr/bin/codesign", ["--verify", "--deep", newApp])
         let mine = teamID(Bundle.main.bundlePath)
-        if verify.status != 0 || (mine != nil && teamID(newApp) != mine) {
+        let myCert = certificateRequirement(Bundle.main.bundlePath)
+        let sameTeam = mine == nil || teamID(newApp) == mine
+        let sameCert = myCert == nil || certificateRequirement(newApp) == myCert
+        if verify.status != 0 || !sameTeam || !sameCert {
             _ = run("/usr/bin/hdiutil", ["detach", mount, "-quiet"])
             return .failure(UpdateError(message: L("Yeni sürümün imzası bu sürümle eşleşmiyor; güvenlik için kurulmadı.")))
         }
         return .success((mount, newApp))
+    }
+
+    /// The "certificate leaf = H\"…\"" part of the designated requirement, i.e. which certificate signed it.
+    /// nil for ad-hoc signatures (those are tied to one build and say nothing about who made it).
+    nonisolated static func certificateRequirement(_ path: String) -> String? {
+        let r = run("/usr/bin/codesign", ["-d", "-r-", path])
+        let text = r.out + r.err
+        guard let range = text.range(of: #"certificate leaf = H"[0-9a-fA-F]+""#, options: .regularExpression) else { return nil }
+        return String(text[range])
     }
 
     nonisolated static func teamID(_ path: String) -> String? {
