@@ -13,6 +13,10 @@
   <a href="../../releases/latest"><b>⬇︎ Download the latest version</b></a>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/home.png" width="860" alt="Kartov Cleaner home screen">
+</p>
+
 ---
 
 ## What it does
@@ -26,6 +30,19 @@
 - **Auto maintenance:** Cleans the categories you pick, on the day and time you choose. It never touches your personal files.
 - **Menu bar:** One click on the little globe cleans, optimizes, or does both.
 - **Updates:** Lets you know when a new version is out and installs it only if you say so.
+
+## Screenshots
+
+| Overview | Cleanup |
+|:---:|:---:|
+| <img src="docs/screenshots/overview.png" alt="Overview"> | <img src="docs/screenshots/cleanup.png" alt="Cleanup"> |
+| **Analysis** | **System status** |
+| <img src="docs/screenshots/analysis.png" alt="Analysis"> | <img src="docs/screenshots/system.png" alt="System status"> |
+
+<p align="center">
+  <img src="docs/screenshots/maintenance.png" width="860" alt="Auto maintenance"><br>
+  <sub>Auto maintenance · screenshots show the Turkish interface; the app follows your Mac's language (English, Türkçe, Deutsch, Español).</sub>
+</p>
 
 ## Safety first
 
