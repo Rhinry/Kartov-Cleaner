@@ -15,8 +15,13 @@ mkdir -p "$STAGE"
 
 echo ""
 echo "▸ Making the DMG for $NAME $VERSION"
+# A release must carry a real signature, otherwise every update makes macOS forget the app's permissions.
+source ./Packaging/signing.sh
+ensure_local_identity || fail "No signing certificate. Without it every update resets Full Disk Access, so no DMG was made."
 KARTOV_APP_DIR="$STAGE" KARTOV_NO_OPEN=1 bash ./install.sh || fail "Build or signing failed (see the lines above)."
 source ./Packaging/signing.sh
+is_certificate_signed "$STAGE/$NAME.app" || fail "The app came out ad-hoc signed; no DMG was made (it would reset permissions on update)."
+echo "  ✓ Signed with: $(signing_label)"
 
 # Contents of the installer window
 ln -s /Applications "$STAGE/Applications"
