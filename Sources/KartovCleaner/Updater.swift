@@ -28,7 +28,10 @@ final class Updater: NSObject, ObservableObject {
     }
 
     @Published var phase: Phase = .idle
-    @Published var release: Release?
+    @Published var release: Release? {
+        // Red badge on the Dock icon while an update is waiting.
+        didSet { NSApp?.dockTile.badgeLabel = release == nil ? nil : "1" }
+    }
     @Published var showSheet = false
     @Published var bannerDismissed = false
     @Published var autoCheck: Bool { didSet { UserDefaults.standard.set(autoCheck, forKey: "updateAutoCheck"); schedule() } }

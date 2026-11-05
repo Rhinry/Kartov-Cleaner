@@ -36,6 +36,10 @@ final class StatusBar: NSObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] running, busy in Task { @MainActor in self?.setBusy(running || busy != nil) } }
             .store(in: &bag)
+        Updater.shared.$release
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in Task { @MainActor in self?.updateIcon() } }
+            .store(in: &bag)
         model.$autoMessage.compactMap { $0 }
             .receive(on: RunLoop.main)
             .sink { [weak self] m in Task { @MainActor in self?.flash(StatusBar.shortResult(m)) } }
@@ -72,9 +76,37 @@ final class StatusBar: NSObject {
         return img
     }
 
+    private var busy = false
+
     private func setBusy(_ busy: Bool) {
-        item?.button?.image = Self.icon(busy ? "arrow.triangle.2.circlepath" : "globe.europe.africa.fill")
+        self.busy = busy
+        updateIcon()
         if busy { item?.button?.title = "" }
+    }
+
+    /// The globe, or the spinning arrows while working; with a red dot when an update is waiting.
+    private func updateIcon() {
+        let name = busy ? "arrow.triangle.2.circlepath" : "globe.europe.africa.fill"
+        let badge = Updater.shared.release != nil
+        item?.button?.image = badge ? Self.badgedIcon(name) : Self.icon(name)
+        item?.button?.toolTip = badge ? L("Güncelleme var: {0}", Updater.shared.release?.version ?? "") : "Kartov Cleaner"
+    }
+
+    /// Menu bar icon with a small red dot. Drawn at display time so the glyph follows light/dark menu bars.
+    private static func badgedIcon(_ name: String) -> NSImage? {
+        guard let base = NSImage(systemSymbolName: name, accessibilityDescription: "Kartov Cleaner") else { return nil }
+        let size = NSSize(width: base.size.width + 3, height: base.size.height)
+        let img = NSImage(size: size, flipped: false) { rect in
+            let glyph = base.withSymbolConfiguration(.init(paletteColors: [.labelColor])) ?? base
+            glyph.draw(in: NSRect(x: 0, y: 0, width: base.size.width, height: base.size.height))
+            let d: CGFloat = 6.5
+            let dot = NSRect(x: rect.maxX - d, y: rect.maxY - d, width: d, height: d)
+            NSColor.systemRed.setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            return true
+        }
+        img.isTemplate = false
+        return img
     }
 
     /// Shows a short text next to the icon for a few seconds.

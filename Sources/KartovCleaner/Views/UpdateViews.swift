@@ -185,6 +185,14 @@ struct UpdateTopButton: View {
                 Capsule().fill(updater.release != nil ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(KColor.surface.opacity(0.7)))
             )
             .overlay(Capsule().strokeBorder(updater.release != nil ? Color.clear : KColor.border))
+            .overlay(alignment: .topTrailing) {
+                if updater.release != nil {
+                    Circle().fill(KColor.heat)
+                        .frame(width: 9, height: 9)
+                        .overlay(Circle().strokeBorder(KColor.bg, lineWidth: 1.5))
+                        .offset(x: 2, y: -2)
+                }
+            }
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
