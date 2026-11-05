@@ -167,6 +167,7 @@ final class StatusBar: NSObject {
         } else {
             menu.addItem(entry(L("Güncellemeleri denetle…"), #selector(checkUpdates)))
         }
+        menu.addItem(entry(L("Son yenilikler"), #selector(showWhatsNew)))
         menu.addItem(entry(L("Kartov'u aç"), #selector(openApp)))
         menu.addItem(.separator())
         menu.addItem(entry(model.autoRunning ? L("Temizleniyor…") : L("Hızlı temizlik"), #selector(clean)))
@@ -207,6 +208,10 @@ final class StatusBar: NSObject {
         } else {
             model?.openMainWindow?()
         }
+    }
+    @objc private func showWhatsNew() {
+        openApp()
+        Updater.shared.openWhatsNew()
     }
     @objc private func checkUpdates() {
         openApp()

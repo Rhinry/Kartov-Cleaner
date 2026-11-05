@@ -139,8 +139,18 @@ struct UpdateSettingsCard: View {
                         ?? L("Güncelleme deposu ayarlanmamış.")) {
                 Text(updater.currentVersion).font(.system(size: 13, weight: .semibold).monospacedDigit())
             }
-            SettingsRow(L("Güncellemeleri kendiliğinden denetle"), note: L("Günde bir kez bakar; yeni sürüm varsa haber verir, sen onaylamadan kurmaz.")) {
+            SettingsRow(L("Güncellemeleri kendiliğinden denetle"), note: L("Yeni sürüm varsa haber verir, sen onaylamadan kurmaz.")) {
                 Toggle("", isOn: Binding(get: { updater.autoCheck }, set: { updater.autoCheck = $0 })).labelsHidden()
+            }
+            SettingsRow(L("Ne sıklıkla")) {
+                Picker("", selection: Binding(get: { updater.interval }, set: { updater.interval = $0 })) {
+                    ForEach(Updater.intervals, id: \.self) { m in Text(Self.intervalTitle(m)).tag(m) }
+                }
+                .labelsHidden().fixedSize()
+            }
+            .disabled(!updater.autoCheck)
+            SettingsRow(L("Son yenilikler"), note: L("Her sürümde neyin değiştiği")) {
+                Button(L("Göster")) { updater.openWhatsNew() }.buttonStyle(SecondaryButtonStyle())
             }
             SettingsRow(L("Şimdi denetle"), note: statusNote) {
                 if updater.phase == .checking {
@@ -153,6 +163,14 @@ struct UpdateSettingsCard: View {
                         .disabled(updater.repo == nil)
                 }
             }
+        }
+    }
+
+    static func intervalTitle(_ minutes: Int) -> String {
+        switch minutes {
+        case 10: return L("Her 10 dakikada")
+        case 60: return L("Saatte bir")
+        default: return L("Günde bir")
         }
     }
 
@@ -227,5 +245,105 @@ struct UpdateTopButton: View {
     private func tap() {
         if updater.release != nil { updater.showSheet = true; return }
         Task { await updater.check(userInitiated: true) }
+    }
+}
+
+/// "What's new": every release with its notes, newest first. Opens by itself after an update.
+struct WhatsNewSheet: View {
+    @ObservedObject var updater = Updater.shared
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.45).ignoresSafeArea()
+                .onTapGesture { close() }
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 14) {
+                    KartovLogo(size: 48)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(updater.justUpdatedFrom != nil ? L("Kartov Cleaner {0} sürümüne güncellendi", updater.currentVersion)
+                                                            : L("Son yenilikler"))
+                            .font(.system(size: 20, weight: .bold))
+                        Text(updater.justUpdatedFrom.map { L("{0} sürümünden geldin. Değişenler:", $0) }
+                             ?? L("Her sürümde neyin değiştiği"))
+                            .font(.system(size: 12)).foregroundStyle(KColor.textMuted)
+                    }
+                    Spacer()
+                    if updater.changelogLoading { ProgressView().controlSize(.small) }
+                }
+
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 12) {
+                        if updater.changelog.isEmpty && !updater.changelogLoading {
+                            Text(updater.repo == nil ? L("Güncelleme deposu ayarlanmamış.") : L("Henüz yayınlanmış bir sürüm notu yok."))
+                                .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
+                        }
+                        ForEach(updater.changelog) { entry in entryView(entry) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(height: 340)
+
+                HStack {
+                    if let repo = updater.repo, let url = URL(string: "https://github.com/\(repo)/releases") {
+                        Button(L("GitHub'da tüm sürümler")) { NSWorkspace.shared.open(url) }
+                            .buttonStyle(.plain).font(.system(size: 12)).foregroundStyle(KColor.accentSoft)
+                    }
+                    Spacer()
+                    Button(L("Tamam")) { close() }
+                        .buttonStyle(PrimaryButtonStyle())
+                        .keyboardShortcut(.defaultAction)
+                }
+            }
+            .padding(24)
+            .frame(width: 560)
+            .kCard(padding: 0, radius: 20)
+            .fixedSize()
+        }
+    }
+
+    private func close() {
+        updater.showWhatsNew = false
+        updater.justUpdatedFrom = nil
+    }
+
+    private func entryView(_ e: Updater.ChangelogEntry) -> some View {
+        let isCurrent = e.version == updater.currentVersion
+        let isNewer = Updater.isNewer(e.version, than: updater.currentVersion)
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Text("v\(e.version)").font(.system(size: 15, weight: .bold).monospacedDigit())
+                if isCurrent {
+                    Text(L("Yüklü")).font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 7).padding(.vertical, 2)
+                        .background(Capsule().fill(KColor.success.opacity(0.18)))
+                        .foregroundStyle(KColor.success)
+                } else if isNewer {
+                    Text(L("Yeni")).font(.system(size: 10, weight: .bold))
+                        .padding(.horizontal, 7).padding(.vertical, 2)
+                        .background(Capsule().fill(KColor.accent.opacity(0.18)))
+                        .foregroundStyle(KColor.accent)
+                }
+                Spacer()
+                if let d = e.date {
+                    Text(d.formatted(.dateTime.day().month(.wide).year().locale(I18n.locale)))
+                        .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
+                }
+            }
+            Text(e.notes.isEmpty ? AttributedString(L("Bu sürüm için not yazılmamış."))
+                 : ((try? AttributedString(markdown: e.notes, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+                    ?? AttributedString(e.notes)))
+                .font(.system(size: 13))
+                .foregroundStyle(KColor.text.opacity(0.9))
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            if isNewer {
+                Button(L("Bu sürüme güncelle")) { updater.showWhatsNew = false; updater.showSheet = true }
+                    .buttonStyle(SecondaryButtonStyle())
+                    .disabled(updater.release == nil)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(isCurrent ? KColor.accent.opacity(0.08) : KColor.surface2))
+        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(isCurrent ? KColor.accent.opacity(0.35) : Color.clear))
     }
 }

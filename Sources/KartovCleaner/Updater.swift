@@ -36,6 +36,22 @@ final class Updater: NSObject, ObservableObject {
     @Published var bannerDismissed = false
     @Published var autoCheck: Bool { didSet { UserDefaults.standard.set(autoCheck, forKey: "updateAutoCheck"); schedule() } }
     @Published var lastCheck: Date? { didSet { UserDefaults.standard.set(lastCheck, forKey: "updateLastCheck") } }
+    /// Minutes between automatic checks (10 by default).
+    @Published var interval: Int { didSet { UserDefaults.standard.set(interval, forKey: "updateInterval"); schedule() } }
+    static let intervals = [10, 60, 1440]
+
+    // "What's new": every published release with its notes.
+    struct ChangelogEntry: Codable, Identifiable, Equatable {
+        var id: String { version }
+        let version: String
+        let date: Date?
+        let notes: String
+    }
+    @Published var changelog: [ChangelogEntry] = []
+    @Published var changelogLoading = false
+    @Published var showWhatsNew = false
+    /// Set when the app was just updated: the window opens on its own and highlights this version.
+    @Published var justUpdatedFrom: String?
 
     private var timer: Timer?
     private var downloadTask: URLSessionDownloadTask?
@@ -63,14 +79,24 @@ final class Updater: NSObject, ObservableObject {
     private override init() {
         autoCheck = UserDefaults.standard.object(forKey: "updateAutoCheck") as? Bool ?? true
         lastCheck = UserDefaults.standard.object(forKey: "updateLastCheck") as? Date
+        interval = UserDefaults.standard.object(forKey: "updateInterval") as? Int ?? 10
+        if let data = UserDefaults.standard.data(forKey: "updateChangelog"),
+           let saved = try? JSONDecoder().decode([ChangelogEntry].self, from: data) { changelog = saved }
         super.init()
     }
 
     // MARK: checking
 
-    /// Called once at launch: first look after 15 seconds, then once a day.
+    /// Called once at launch: first look after 15 seconds, then every `interval` minutes.
+    /// Also notices when this launch is the first one after an update and shows what changed.
     func start() {
         UNUserNotificationCenter.current().delegate = self
+        let seen = UserDefaults.standard.string(forKey: "updateLastSeenVersion")
+        if let seen, Self.isNewer(currentVersion, than: seen) {
+            justUpdatedFrom = seen
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in self?.openWhatsNew() }
+        }
+        UserDefaults.standard.set(currentVersion, forKey: "updateLastSeenVersion")
         schedule()
     }
 
@@ -79,14 +105,14 @@ final class Updater: NSObject, ObservableObject {
         timer = nil
         guard autoCheck, repo != nil else { return }
         DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in self?.checkIfDue() }
-        timer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkIfDue() }
         }
     }
 
     private func checkIfDue() {
         guard autoCheck else { return }
-        if let last = lastCheck, Date().timeIntervalSince(last) < 20 * 3600 { return }
+        if let last = lastCheck, Date().timeIntervalSince(last) < Double(interval * 60) - 5 { return }
         Task { await check(userInitiated: false) }
     }
 
@@ -97,7 +123,8 @@ final class Updater: NSObject, ObservableObject {
             return
         }
         if case .downloading = phase { return }
-        phase = .checking
+        if phase == .installing { return }
+        if userInitiated { phase = .checking }
         var req = URLRequest(url: URL(string: "https://api.github.com/repos/\(repo)/releases/latest")!)
         req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         req.setValue("KartovCleaner/\(currentVersion)", forHTTPHeaderField: "User-Agent")
@@ -106,15 +133,18 @@ final class Updater: NSObject, ObservableObject {
             let (data, response) = try await URLSession.shared.data(for: req)
             let code = (response as? HTTPURLResponse)?.statusCode ?? 0
             lastCheck = Date()
-            if code == 404 { phase = .upToDate; release = nil; resetUpToDateLater(); return }   // no release published yet
+            if code == 404 {   // no release published yet
+                release = nil
+                if userInitiated { phase = .upToDate; resetUpToDateLater() } else { phase = .idle }
+                return
+            }
             guard code == 200, let found = Self.parse(data) else {
                 phase = userInitiated ? .failed(L("GitHub'a ulaşılamadı. Biraz sonra yeniden dene.")) : .idle
                 return
             }
             guard Self.isNewer(found.version, than: currentVersion) else {
                 release = nil
-                phase = .upToDate
-                resetUpToDateLater()
+                if userInitiated { phase = .upToDate; resetUpToDateLater() } else { phase = .idle }
                 return
             }
             if !userInitiated, found.version == skippedVersion { phase = .idle; return }
@@ -134,6 +164,39 @@ final class Updater: NSObject, ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
             if self?.phase == .upToDate { self?.phase = .idle }
         }
+    }
+
+    // MARK: what's new
+
+    func openWhatsNew() {
+        showWhatsNew = true
+        Task { await loadChangelog() }
+    }
+
+    /// All published releases (newest first) with their notes. Kept on disk to show offline.
+    func loadChangelog() async {
+        guard let repo, !changelogLoading else { return }
+        changelogLoading = true
+        defer { changelogLoading = false }
+        var req = URLRequest(url: URL(string: "https://api.github.com/repos/\(repo)/releases?per_page=30")!)
+        req.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        req.setValue("KartovCleaner/\(currentVersion)", forHTTPHeaderField: "User-Agent")
+        req.timeoutInterval = 20
+        guard let (data, response) = try? await URLSession.shared.data(for: req),
+              (response as? HTTPURLResponse)?.statusCode == 200,
+              let list = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return }
+        let iso = ISO8601DateFormatter()
+        let entries: [ChangelogEntry] = list.compactMap { r in
+            guard (r["draft"] as? Bool) != true, (r["prerelease"] as? Bool) != true,
+                  let tag = r["tag_name"] as? String else { return nil }
+            let v = tag.hasPrefix("v") || tag.hasPrefix("V") ? String(tag.dropFirst()) : tag
+            return ChangelogEntry(version: v,
+                                  date: (r["published_at"] as? String).flatMap { iso.date(from: $0) },
+                                  notes: (r["body"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        .sorted { Self.isNewer($0.version, than: $1.version) }
+        changelog = entries
+        if let data = try? JSONEncoder().encode(entries) { UserDefaults.standard.set(data, forKey: "updateChangelog") }
     }
 
     static func parse(_ data: Data) -> Release? {

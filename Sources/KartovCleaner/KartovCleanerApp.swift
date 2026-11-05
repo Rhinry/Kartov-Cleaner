@@ -139,6 +139,12 @@ struct TopBar: View {
                 Color.clear.frame(width: 70, height: 1)   // red / yellow / green window buttons
                 KartovBrand()
                 Spacer(minLength: 0)
+                Button { Updater.shared.openWhatsNew() } label: {
+                    Image(systemName: "sparkles.rectangle.stack").font(.system(size: 14))
+                        .foregroundStyle(KColor.textMuted).frame(width: 26, height: 26).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(L("Son yenilikler"))
                 UpdateTopButton()
                 Button { model.openTutorial() } label: {
                     Image(systemName: "questionmark.circle").font(.system(size: 14))
@@ -311,5 +317,6 @@ struct UpdateOverlay: View {
     @ObservedObject var updater = Updater.shared
     var body: some View {
         if updater.showSheet { UpdateSheet() }
+        else if updater.showWhatsNew { WhatsNewSheet() }
     }
 }
