@@ -31,6 +31,19 @@
 - **Menu bar:** One click on the little globe cleans, optimizes, or does both.
 - **Updates:** Lets you know when a new version is out and installs it only if you say so.
 
+### Guardian (new in 0.7)
+
+Kartov now keeps an eye on your Mac in the background, once a minute. It only reads; it never deletes anything.
+
+- **Alerts:** an app straining the processor for minutes, memory pressure, a disk that is almost full or filling fast, and apps whose files suddenly grow. Work profiles keep it quiet while you render, compile or play.
+- **Disk forecast:** estimates when your disk will be full at the current pace.
+- **Energy:** live per-app power and what drained the battery over the last 24 hours.
+- **Crashes:** 30 days of crash, hang and unexpected-restart reports, explained in plain words.
+- **Privacy:** which apps can use your camera, microphone, screen, files, contacts and more, with apps you no longer use or have removed listed first.
+- **Living globe:** the home globe warms up under CPU load, clouds over under memory pressure, and a ring shows how full the disk is.
+- **Related files:** a map of everything an app keeps in your Library (cache, logs, settings, support files, startup items). Only regenerable files can go to the Trash, after you confirm.
+- **Cleanup passport:** a running total of everything you've cleaned, by section and month, with a copyable report for each cleanup.
+
 ## Screenshots
 
 | Overview | Cleanup |
