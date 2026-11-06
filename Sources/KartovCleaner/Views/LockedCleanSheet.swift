@@ -11,6 +11,8 @@ struct LockedCleanSheet: View {
         let apps = model.lockedApps
         let held = model.lockedSelectedBytes
         let now = model.selectedBytes
+        let chosen = apps.filter { !model.lockedKeepOpen.contains($0.id) }
+        let gain = min(held, chosen.reduce(Int64(0)) { $0 + $1.bytes })
         ZStack {
             Color.black.opacity(0.45).ignoresSafeArea()
                 .onTapGesture { if !model.quittingForClean { model.showLockedSheet = false } }
@@ -28,22 +30,35 @@ struct LockedCleanSheet: View {
                     }
                 }
 
+                Text(L("Kapatılacakları seç; işaretini kaldırdıkların açık kalır."))
+                    .font(.system(size: 12)).foregroundStyle(KColor.textMuted)
                 VStack(spacing: 6) {
                     ForEach(apps) { a in
-                        HStack(spacing: 10) {
-                            if let icon = a.icon { Image(nsImage: icon).resizable().frame(width: 24, height: 24) }
-                            Text(a.name).font(.system(size: 13, weight: .medium)).lineLimit(1)
-                            Spacer()
-                            Text(KBytes.format(a.bytes)).font(.system(size: 12, weight: .semibold).monospacedDigit())
-                                .foregroundStyle(KColor.warning)
+                        let close = !model.lockedKeepOpen.contains(a.id)
+                        Button { model.toggleKeepOpen(a.id) } label: {
+                            HStack(spacing: 10) {
+                                Image(systemName: close ? "checkmark.circle.fill" : "circle")
+                                    .font(.system(size: 16)).foregroundStyle(close ? KColor.accent : KColor.textMuted)
+                                if let icon = a.icon { Image(nsImage: icon).resizable().frame(width: 24, height: 24) }
+                                Text(a.name).font(.system(size: 13, weight: .medium)).lineLimit(1)
+                                Spacer()
+                                Text(close ? L("kapatılacak") : L("açık kalacak"))
+                                    .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
+                                Text(KBytes.format(a.bytes)).font(.system(size: 12, weight: .semibold).monospacedDigit())
+                                    .foregroundStyle(close ? KColor.success : KColor.textMuted)
+                                    .frame(width: 80, alignment: .trailing)
+                            }
+                            .padding(.horizontal, 12).frame(height: 38)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(KColor.surface2.opacity(close ? 0.7 : 0.3)))
+                            .contentShape(Rectangle())
                         }
-                        .padding(.horizontal, 12).frame(height: 38)
-                        .background(RoundedRectangle(cornerRadius: 10).fill(KColor.surface2.opacity(0.6)))
+                        .buttonStyle(.plain)
+                        .disabled(model.quittingForClean)
                     }
                 }
 
                 HStack(spacing: 12) {
-                    Summary(label: L("Kapatırsan"), value: KBytes.format(now + held), tint: KColor.success)
+                    Summary(label: L("Seçilenleri kapatırsan"), value: KBytes.format(now + gain), tint: KColor.success)
                     Summary(label: L("Kapatmadan"), value: KBytes.format(now), tint: KColor.text)
                 }
 
@@ -69,9 +84,10 @@ struct LockedCleanSheet: View {
                     }
                     .buttonStyle(SecondaryButtonStyle())
                     .disabled(now == 0 || model.quittingForClean)
-                    Button(L("Hepsini kapat ve temizle")) { model.quitLockedAppsAndClean() }
+                    Button(chosen.count == apps.count ? L("Hepsini kapat ve temizle")
+                           : L("{0} programı kapat ve temizle", chosen.count)) { model.quitLockedAppsAndClean() }
                         .buttonStyle(PrimaryButtonStyle())
-                        .disabled(model.quittingForClean)
+                        .disabled(model.quittingForClean || chosen.isEmpty)
                 }
             }
             .padding(22)

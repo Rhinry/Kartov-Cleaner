@@ -796,7 +796,12 @@
   "Kapatmadan {0} temizle": "Clean {0} without quitting",
   "Kapatmadan temizlenecek bir şey yok": "Nothing to clean without quitting",
   "Hepsini kapat ve temizle": "Quit all and clean",
-  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} didn't quit; its cache was skipped this time."
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} didn't quit; its cache was skipped this time.",
+  "Kapatılacakları seç; işaretini kaldırdıkların açık kalır.": "Choose which to quit; the ones you untick stay open.",
+  "kapatılacak": "will quit",
+  "açık kalacak": "stays open",
+  "Seçilenleri kapatırsan": "If you quit the selected",
+  "{0} programı kapat ve temizle": "Quit {0} apps and clean"
  },
  "de": {
   "Uygulama": "App",
@@ -1595,7 +1600,12 @@
   "Kapatmadan {0} temizle": "{0} ohne Beenden bereinigen",
   "Kapatmadan temizlenecek bir şey yok": "Ohne Beenden gibt es nichts zu bereinigen",
   "Hepsini kapat ve temizle": "Alle beenden und bereinigen",
-  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} wurde nicht beendet; sein Cache wurde diesmal übersprungen."
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} wurde nicht beendet; sein Cache wurde diesmal übersprungen.",
+  "Kapatılacakları seç; işaretini kaldırdıkların açık kalır.": "Wähle, welche beendet werden; abgewählte bleiben geöffnet.",
+  "kapatılacak": "wird beendet",
+  "açık kalacak": "bleibt geöffnet",
+  "Seçilenleri kapatırsan": "Wenn du die ausgewählten beendest",
+  "{0} programı kapat ve temizle": "{0} Apps beenden und bereinigen"
  },
  "es": {
   "Uygulama": "App",
@@ -2394,6 +2404,11 @@
   "Kapatmadan {0} temizle": "Limpiar {0} sin cerrarlas",
   "Kapatmadan temizlenecek bir şey yok": "No hay nada que limpiar sin cerrarlas",
   "Hepsini kapat ve temizle": "Cerrar todas y limpiar",
-  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} no se cerró; su caché se omitió esta vez."
+  "{0} kapanmadı; onun önbelleği bu sefer atlandı.": "{0} no se cerró; su caché se omitió esta vez.",
+  "Kapatılacakları seç; işaretini kaldırdıkların açık kalır.": "Elige cuáles cerrar; las que desmarques seguirán abiertas.",
+  "kapatılacak": "se cerrará",
+  "açık kalacak": "seguirá abierta",
+  "Seçilenleri kapatırsan": "Si cierras las seleccionadas",
+  "{0} programı kapat ve temizle": "Cerrar {0} apps y limpiar"
  }
 }

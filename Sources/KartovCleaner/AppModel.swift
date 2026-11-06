@@ -180,6 +180,8 @@ final class AppModel: ObservableObject {
     @Published var showLockedSheet = false
     @Published var quittingForClean = false
     @Published var lockedSheetMessage: String?
+    /// Open programs the user chose to leave running (bundle ids), for this sheet only.
+    @Published var lockedKeepOpen: Set<String> = []
     /// Items of profile-protected groups the user chose to clean anyway (this session only).
     @Published var released: Set<String> = []
     private var profileWatch: AnyCancellable?
@@ -1125,6 +1127,7 @@ final class AppModel: ObservableObject {
         refreshLocks()
         if lockedSelectedBytes > 0 && !lockedApps.isEmpty {
             lockedSheetMessage = nil
+            lockedKeepOpen = []
             showLockedSheet = true
             return
         }
@@ -1163,9 +1166,13 @@ final class AppModel: ObservableObject {
         return out.values.sorted { $0.bytes > $1.bytes }
     }
 
+    func toggleKeepOpen(_ id: String) {
+        if lockedKeepOpen.contains(id) { lockedKeepOpen.remove(id) } else { lockedKeepOpen.insert(id) }
+    }
+
     /// Closes the programs that hold chosen caches (each may ask to save first), then cleans.
     func quitLockedAppsAndClean() {
-        let apps = lockedApps.map(\.app)
+        let apps = lockedApps.filter { !lockedKeepOpen.contains($0.id) }.map(\.app)
         guard !apps.isEmpty else { proceedClean(); return }
         quittingForClean = true
         for app in apps { _ = app.terminate() }
