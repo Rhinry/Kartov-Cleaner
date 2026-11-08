@@ -192,7 +192,7 @@ final class Updater: NSObject, ObservableObject {
             let v = tag.hasPrefix("v") || tag.hasPrefix("V") ? String(tag.dropFirst()) : tag
             return ChangelogEntry(version: v,
                                   date: (r["published_at"] as? String).flatMap { iso.date(from: $0) },
-                                  notes: (r["body"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines))
+                                  notes: ReleaseNotes.localized(r["body"] as? String ?? "", language: I18n.code))
         }
         .sorted { Self.isNewer($0.version, than: $1.version) }
         changelog = entries
@@ -211,7 +211,7 @@ final class Updater: NSObject, ObservableObject {
             .flatMap { $0["browser_download_url"] as? String }.flatMap(URL.init(string:))
         let version = tag.hasPrefix("v") || tag.hasPrefix("V") ? String(tag.dropFirst()) : tag
         return Release(version: version,
-                       notes: (json["body"] as? String ?? "").trimmingCharacters(in: .whitespacesAndNewlines),
+                       notes: ReleaseNotes.localized(json["body"] as? String ?? "", language: I18n.code),
                        dmgURL: url, checksumURL: sum,
                        pageURL: (json["html_url"] as? String).flatMap(URL.init(string:)),
                        size: (dmg["size"] as? NSNumber)?.int64Value ?? 0)

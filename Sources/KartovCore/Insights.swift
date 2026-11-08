@@ -330,3 +330,32 @@ public enum PathTrasher {
                            bytesInTrash: trashed, measuredFreed: nil, undoneAt: nil, automatic: nil)
     }
 }
+
+// MARK: - release notes in several languages
+
+/// Release notes may hold one section per language, each starting with `<!-- lang:xx -->`
+/// (invisible on GitHub). The app shows the section for its own language, then English,
+/// then the whole text when there are no sections.
+public enum ReleaseNotes {
+    public static func localized(_ body: String, language: String) -> String {
+        let pattern = #"<!--\s*lang:([a-zA-Z-]+)\s*-->"#
+        guard let re = try? NSRegularExpression(pattern: pattern) else { return body }
+        let ns = body as NSString
+        let matches = re.matches(in: body, range: NSRange(location: 0, length: ns.length))
+        guard !matches.isEmpty else { return body.trimmingCharacters(in: .whitespacesAndNewlines) }
+        var sections: [String: String] = [:]
+        for (i, m) in matches.enumerated() {
+            let code = ns.substring(with: m.range(at: 1)).lowercased()
+            let start = m.range.location + m.range.length
+            let end = i + 1 < matches.count ? matches[i + 1].range.location : ns.length
+            var text = ns.substring(with: NSRange(location: start, length: end - start))
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            // A "---" between the sections only separates them on GitHub.
+            while text.hasSuffix("---") {
+                text = String(text.dropLast(3)).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            if sections[code] == nil { sections[code] = text }
+        }
+        return sections[language.lowercased()] ?? sections["en"] ?? sections.values.first ?? body
+    }
+}

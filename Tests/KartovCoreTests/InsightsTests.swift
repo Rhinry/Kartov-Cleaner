@@ -62,3 +62,12 @@ final class InsightsTests: XCTestCase {
         XCTAssertTrue(AppFootprint.scan(bundleID: "com.apple.Safari", appName: "Safari", home: home).isEmpty)
     }
 }
+
+final class ReleaseNotesTests: XCTestCase {
+    func testPicksLanguage() {
+        let body = "<!-- lang:tr -->\nMerhaba\n\n---\n<!-- lang:en -->\nHello\n"
+        XCTAssertEqual(ReleaseNotes.localized(body, language: "tr"), "Merhaba")
+        XCTAssertEqual(ReleaseNotes.localized(body, language: "de"), "Hello")
+        XCTAssertEqual(ReleaseNotes.localized("Plain", language: "tr"), "Plain")
+    }
+}
