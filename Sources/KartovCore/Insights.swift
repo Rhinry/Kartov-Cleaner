@@ -333,29 +333,45 @@ public enum PathTrasher {
 
 // MARK: - release notes in several languages
 
-/// Release notes may hold one section per language, each starting with `<!-- lang:xx -->`
-/// (invisible on GitHub). The app shows the section for its own language, then English,
-/// then the whole text when there are no sections.
+/// GitHub shows the English notes. Translations ride along in a hidden HTML comment at the end:
+///
+///     <!-- kartov-i18n
+///     [tr]
+///     Türkçe notlar
+///     [de]
+///     …
+///     -->
+///
+/// The app shows the part in its own language, or the English text when there is none.
 public enum ReleaseNotes {
     public static func localized(_ body: String, language: String) -> String {
-        let pattern = #"<!--\s*lang:([a-zA-Z-]+)\s*-->"#
-        guard let re = try? NSRegularExpression(pattern: pattern) else { return body }
-        let ns = body as NSString
-        let matches = re.matches(in: body, range: NSRange(location: 0, length: ns.length))
-        guard !matches.isEmpty else { return body.trimmingCharacters(in: .whitespacesAndNewlines) }
-        var sections: [String: String] = [:]
-        for (i, m) in matches.enumerated() {
-            let code = ns.substring(with: m.range(at: 1)).lowercased()
-            let start = m.range.location + m.range.length
-            let end = i + 1 < matches.count ? matches[i + 1].range.location : ns.length
-            var text = ns.substring(with: NSRange(location: start, length: end - start))
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            // A "---" between the sections only separates them on GitHub.
-            while text.hasSuffix("---") {
-                text = String(text.dropLast(3)).trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-            if sections[code] == nil { sections[code] = text }
+        let text = body.replacingOccurrences(of: "\r\n", with: "\n")
+        guard let start = text.range(of: "<!-- kartov-i18n") else {
+            return text.trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return sections[language.lowercased()] ?? sections["en"] ?? sections.values.first ?? body
+        let rest = text[start.upperBound...]
+        let end = rest.range(of: "-->")
+        let block = end.map { String(rest[..<$0.lowerBound]) } ?? String(rest)
+        var visible = String(text[..<start.lowerBound])
+        if let end { visible += String(rest[end.upperBound...]) }
+        visible = visible.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        var sections: [String: [String]] = [:]
+        var current: String?
+        for line in block.components(separatedBy: "\n") {
+            let t = line.trimmingCharacters(in: .whitespaces)
+            if t.count >= 4, t.hasPrefix("["), t.hasSuffix("]"), !t.contains(" ") {
+                current = String(t.dropFirst().dropLast()).lowercased()
+                sections[current!] = []
+            } else if let c = current {
+                sections[c, default: []].append(line)
+            }
+        }
+        let lang = language.lowercased()
+        if lang != "en", let lines = sections[lang] {
+            let t = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty { return t }
+        }
+        return visible
     }
 }

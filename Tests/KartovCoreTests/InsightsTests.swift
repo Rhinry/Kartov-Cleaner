@@ -65,9 +65,11 @@ final class InsightsTests: XCTestCase {
 
 final class ReleaseNotesTests: XCTestCase {
     func testPicksLanguage() {
-        let body = "<!-- lang:tr -->\nMerhaba\n\n---\n<!-- lang:en -->\nHello\n"
+        let body = "Hello\n\n<!-- kartov-i18n\n[tr]\nMerhaba\n[de]\nHallo\n-->\n"
         XCTAssertEqual(ReleaseNotes.localized(body, language: "tr"), "Merhaba")
-        XCTAssertEqual(ReleaseNotes.localized(body, language: "de"), "Hello")
+        XCTAssertEqual(ReleaseNotes.localized(body, language: "de"), "Hallo")
+        XCTAssertEqual(ReleaseNotes.localized(body, language: "en"), "Hello")
+        XCTAssertEqual(ReleaseNotes.localized(body, language: "es"), "Hello")
         XCTAssertEqual(ReleaseNotes.localized("Plain", language: "tr"), "Plain")
     }
 }
