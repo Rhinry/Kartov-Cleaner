@@ -7,7 +7,7 @@ import KartovCore
 
 /// Something Gözetim noticed.
 struct GuardianAlert: Codable, Identifiable, Hashable {
-    enum Kind: String, Codable { case cpu, memory, diskLow, diskBurst, appGrowth, thermal }
+    enum Kind: String, Codable { case cpu, memory, diskLow, diskBurst, appGrowth, thermal, forecast, weekly }
     var id: UUID
     var date: Date
     var kind: Kind
@@ -25,6 +25,8 @@ struct GuardianAlert: Codable, Identifiable, Hashable {
         case .diskBurst: return "arrow.up.right.circle"
         case .appGrowth: return "chart.line.uptrend.xyaxis"
         case .thermal: return "thermometer.high"
+        case .forecast: return "hourglass"
+        case .weekly: return "calendar"
         }
     }
 }
@@ -77,10 +79,11 @@ private struct GuardianState: Codable {
     var alerts: [GuardianAlert] = []
     var cooldown: [String: Date] = [:]
     var energy: [EnergyBucket] = []
+    var lastWeekly: Date?
 
     init() {}
 
-    enum CodingKeys: String, CodingKey { case disk, footprints, names, lastFootprintRun, alerts, cooldown, energy }
+    enum CodingKeys: String, CodingKey { case disk, footprints, names, lastFootprintRun, alerts, cooldown, energy, lastWeekly }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -91,6 +94,7 @@ private struct GuardianState: Codable {
         alerts = (try? c.decodeIfPresent([GuardianAlert].self, forKey: .alerts)) ?? []
         cooldown = (try? c.decodeIfPresent([String: Date].self, forKey: .cooldown)) ?? [:]
         energy = (try? c.decodeIfPresent([EnergyBucket].self, forKey: .energy)) ?? []
+        lastWeekly = try? c.decodeIfPresent(Date.self, forKey: .lastWeekly)
     }
 }
 
@@ -133,6 +137,7 @@ final class Guardian: ObservableObject {
     @Published var watchMemory: Bool { didSet { defaults.set(watchMemory, forKey: "guardianMemory") } }
     @Published var watchDisk: Bool { didSet { defaults.set(watchDisk, forKey: "guardianDisk") } }
     @Published var watchGrowth: Bool { didSet { defaults.set(watchGrowth, forKey: "guardianGrowth") } }
+    @Published var weeklySummary: Bool { didSet { defaults.set(weeklySummary, forKey: "guardianWeekly") } }
 
     // Readings
     @Published private(set) var vitals = Vitals()
@@ -173,6 +178,7 @@ final class Guardian: ObservableObject {
     private var livePrev: [pid_t: (energy: UInt64, at: Date)] = [:]
     private var hotStreak: [String: Int] = [:]
     private var memoryStreak = 0
+    private var weeklyBusy = false
     private var lastSave = Date.distantPast
     private var started = false
 
@@ -194,6 +200,7 @@ final class Guardian: ObservableObject {
         watchMemory = d.object(forKey: "guardianMemory") as? Bool ?? true
         watchDisk = d.object(forKey: "guardianDisk") as? Bool ?? true
         watchGrowth = d.object(forKey: "guardianGrowth") as? Bool ?? true
+        weeklySummary = d.object(forKey: "guardianWeekly") as? Bool ?? true
         load()
     }
 
@@ -290,6 +297,7 @@ final class Guardian: ObservableObject {
         checkMemory()
         scanProcesses()
         measureFootprintsIfDue()
+        weeklyIfDue()
         if Date().timeIntervalSince(lastSave) > 300 { save() }
     }
 
@@ -310,6 +318,13 @@ final class Guardian: ObservableObject {
             flag(.diskLow, key: "disk.low", cooldown: 24 * 3600,
                   title: L("Disk neredeyse dolu"),
                   detail: L("Yalnızca {0} boş yer kaldı. Temizlik ya da Tam tarama yer açar.", KBytes.format(d.free)))
+        }
+        // Early warning: at this pace the disk is full within two weeks.
+        if case .fills(let days) = forecast.kind, days <= 14, Double(d.free) / Double(d.total) >= 0.05 {
+            flag(.forecast, key: "disk.forecast", cooldown: days <= 3 ? 86_400 : 3 * 86_400,
+                  title: L("Disk yaklaşık {0} günde dolacak", max(1, Int(days.rounded()))),
+                  detail: L("Günde ortalama {0} doluyor, {1} boş yer kaldı. Temizlik, Projeler ya da Tam tarama yer açar.",
+                            KBytes.format(Int64(forecast.perDay)), KBytes.format(d.free)))
         }
         // A sudden jump: compare with a reading from about an hour ago.
         let now = Date()
@@ -395,6 +410,54 @@ final class Guardian: ObservableObject {
         }
         let cutoff = now.addingTimeInterval(-24 * 3600)
         state.energy.removeAll { $0.hour < cutoff }
+    }
+
+    // MARK: weekly summary
+
+    /// One notification a week (Monday from 10:00, or as soon as the Mac is on after that):
+    /// how the disk moved, what was cleaned, alerts, crashes and untouched projects.
+    private func weeklyIfDue() {
+        guard weeklySummary, !weeklyBusy else { return }
+        let now = Date()
+        guard let last = state.lastWeekly else {
+            // First run: count from now, so the first summary covers a real week.
+            state.lastWeekly = now
+            return
+        }
+        let since = now.timeIntervalSince(last)
+        let cal = Calendar.current
+        let mondayMorning = cal.component(.weekday, from: now) == 2 && cal.component(.hour, from: now) >= 10
+        guard (mondayMorning && since > 5 * 86_400) || since > 8 * 86_400 else { return }
+        weeklyBusy = true
+        let weekAgo = now.addingTimeInterval(-7 * 86_400)
+        let diskDelta = WeeklyDigest.diskChange(state.disk, now: now)
+        let alertCount = alerts.filter { $0.date >= weekAgo && $0.kind != .weekly }.count
+        let growthName = growth.first?.name
+        let growthBytes = growth.first?.delta ?? 0
+        let idle = ProjectCaches.storedSummary
+        let idleCount = idle?.count ?? 0
+        let idleBytes = idle?.bytes ?? 0
+        Task.detached(priority: .utility) {
+            let home = FileManager.default.homeDirectoryForCurrentUser
+            let crashes = CrashReportParser.scan(
+                folders: [home.appendingPathComponent("Library/Logs/DiagnosticReports"),
+                          URL(fileURLWithPath: "/Library/Logs/DiagnosticReports")],
+                since: weekAgo).filter { $0.kind != .resource }.count
+            let cleaned = HistoryStore().load().records
+                .filter { $0.date >= weekAgo && $0.undoneAt == nil }
+                .reduce(Int64(0)) { $0 + $1.bytesCleaned }
+            let digest = WeeklyDigest(diskDelta: diskDelta, cleaned: cleaned, alerts: alertCount, crashes: crashes,
+                                      growthName: growthName, growthBytes: growthBytes,
+                                      idleProjects: idleCount, idleProjectBytes: idleBytes)
+            let text = digest.text { KBytes.format($0) }
+            await MainActor.run { Guardian.shared.postWeekly(text) }
+        }
+    }
+
+    private func postWeekly(_ text: String) {
+        weeklyBusy = false
+        state.lastWeekly = Date()
+        flag(.weekly, key: "weekly", cooldown: 4 * 86_400, title: L("Haftalık özet"), detail: text)
     }
 
     // MARK: programs whose files grow

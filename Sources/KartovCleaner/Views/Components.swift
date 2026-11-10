@@ -34,6 +34,37 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+// MARK: capsule picker
+
+/// A small set of choices as pill tabs, drawn like the main tab bar.
+struct CapsulePicker<T: Hashable & Identifiable>: View {
+    let options: [T]
+    let title: (T) -> String
+    let selection: T
+    let onSelect: (T) -> Void
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(options) { option in
+                let selected = option == selection
+                Button { onSelect(option) } label: {
+                    Text(title(option)).font(.system(size: 12, weight: selected ? .semibold : .medium))
+                        .foregroundStyle(selected ? Color.white : KColor.textMuted)
+                        .padding(.horizontal, 12).frame(height: 26)
+                        .background(Capsule().fill(selected ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(Color.clear)))
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selected ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .background(Capsule().fill(KColor.surface2.opacity(0.8)))
+        .overlay(Capsule().strokeBorder(KGradient.rim))
+        .fixedSize()
+    }
+}
+
 // MARK: status
 
 struct StatusPill: View {

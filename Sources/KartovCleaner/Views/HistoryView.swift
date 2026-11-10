@@ -191,6 +191,7 @@ enum Passport {
     @MainActor static func title(for ruleID: String, model: AppModel) -> String {
         if ruleID == "fullscan" { return L("Tam tarama") }
         if ruleID.hasPrefix("appmap.") { return L("Bağlantılı dosyalar") }
+        if ruleID.hasPrefix("projects.") { return L("Proje önbellekleri") }
         return model.rule(ruleID)?.group.title ?? L("Diğer")
     }
 

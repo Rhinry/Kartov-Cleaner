@@ -4,7 +4,7 @@ import Combine
 import KartovCore
 
 enum AppSection: String, Hashable, CaseIterable, Identifiable {
-    case dashboard, overview, scan, results, fullScan, system, analysis, guardian, maintenance, history, settings
+    case dashboard, overview, scan, results, projects, fullScan, system, analysis, guardian, maintenance, history, settings
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -12,6 +12,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .overview: return L("Genel bakış")
         case .scan: return L("Tarama")
         case .results: return L("Bulunanlar")
+        case .projects: return L("Projeler")
         case .fullScan: return L("Tam tarama")
         case .system: return L("Sistem durumu")
         case .maintenance: return L("Otomatik bakım")
@@ -27,6 +28,7 @@ enum AppSection: String, Hashable, CaseIterable, Identifiable {
         case .overview: return "square.grid.2x2.fill"
         case .scan: return "magnifyingglass"
         case .results: return "square.stack.3d.up.fill"
+        case .projects: return "film.stack.fill"
         case .fullScan: return "chart.pie.fill"
         case .system: return "speedometer"
         case .maintenance: return "clock.badge.checkmark"

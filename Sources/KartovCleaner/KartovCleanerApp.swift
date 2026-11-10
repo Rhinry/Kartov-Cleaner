@@ -72,6 +72,7 @@ struct RootView: View {
                 case .overview: DashboardView()
                 case .scan: ScanView()
                 case .results: ResultsView()
+                case .projects: ProjectsView()
                 case .fullScan: FullScanView()
                 case .system: SystemView()
                 case .maintenance: MaintenanceView()
@@ -89,13 +90,14 @@ struct RootView: View {
 
 /// The tabs shown in the top bar. "Temizlik" covers both the scan and its results.
 enum TopTab: CaseIterable, Identifiable {
-    case home, overview, clean, full, system, analysis, watch, care, history
+    case home, overview, clean, projects, full, system, analysis, watch, care, history
     var id: Self { self }
     var title: String {
         switch self {
         case .home: return L("Ana sayfa")
         case .overview: return L("Genel bakış")
         case .clean: return L("Temizlik")
+        case .projects: return L("Projeler")
         case .full: return L("Tam tarama")
         case .system: return L("Sistem")
         case .analysis: return L("Analiz")
@@ -109,6 +111,7 @@ enum TopTab: CaseIterable, Identifiable {
         case .home: return "globe.europe.africa.fill"
         case .overview: return "square.grid.2x2.fill"
         case .clean: return "sparkles"
+        case .projects: return "film.stack.fill"
         case .full: return "chart.pie.fill"
         case .system: return "speedometer"
         case .analysis: return "chart.bar.xaxis"
@@ -122,6 +125,7 @@ enum TopTab: CaseIterable, Identifiable {
         case .home: return [.dashboard]
         case .overview: return [.overview]
         case .clean: return [.scan, .results]
+        case .projects: return [.projects]
         case .full: return [.fullScan]
         case .system: return [.system]
         case .analysis: return [.analysis]

@@ -375,3 +375,52 @@ public enum ReleaseNotes {
         return visible
     }
 }
+
+// MARK: - weekly summary
+
+/// What happened on the Mac over the last week, in a few short sentences.
+public struct WeeklyDigest: Sendable, Equatable {
+    /// Bytes the disk filled (positive) or emptied (negative); nil without enough readings.
+    public var diskDelta: Int64?
+    public var cleaned: Int64
+    public var alerts: Int
+    public var crashes: Int
+    public var growthName: String?
+    public var growthBytes: Int64
+    public var idleProjects: Int
+    public var idleProjectBytes: Int64
+
+    public init(diskDelta: Int64? = nil, cleaned: Int64 = 0, alerts: Int = 0, crashes: Int = 0,
+                growthName: String? = nil, growthBytes: Int64 = 0, idleProjects: Int = 0, idleProjectBytes: Int64 = 0) {
+        self.diskDelta = diskDelta; self.cleaned = cleaned; self.alerts = alerts; self.crashes = crashes
+        self.growthName = growthName; self.growthBytes = growthBytes
+        self.idleProjects = idleProjects; self.idleProjectBytes = idleProjectBytes
+    }
+
+    /// How much the used space changed between the oldest reading of the last `days` days and the newest.
+    /// Needs readings at least three days apart.
+    public static func diskChange(_ samples: [DiskSample], days: Double = 7, now: Date = Date()) -> Int64? {
+        let cutoff = now.addingTimeInterval(-(days + 0.5) * 86_400)
+        let s = samples.filter { $0.date >= cutoff && $0.date <= now }.sorted { $0.date < $1.date }
+        guard let first = s.first, let last = s.last, last.date.timeIntervalSince(first.date) >= 3 * 86_400 else { return nil }
+        return last.used - first.used
+    }
+
+    /// The sentences, joined. `bytes` formats a byte count ("3,2 GB").
+    public func text(bytes: (Int64) -> String) -> String {
+        var parts: [String] = []
+        if let d = diskDelta {
+            if d >= 100_000_000 { parts.append(L("Bu hafta disk {0} doldu.", bytes(d))) }
+            else if d <= -100_000_000 { parts.append(L("Bu hafta diskte {0} yer açıldı.", bytes(-d))) }
+            else { parts.append(L("Bu hafta disk kullanımı değişmedi.")) }
+        }
+        if cleaned > 0 { parts.append(L("Kartov {0} temizledi.", bytes(cleaned))) }
+        if alerts == 0 && crashes == 0 { parts.append(L("Uyarı ya da çökme yok.")) }
+        else { parts.append(L("{0} uyarı, {1} çökme.", alerts, crashes)) }
+        if let n = growthName, growthBytes > 0 { parts.append(L("En çok büyüyen: {0} (+{1}).", n, bytes(growthBytes))) }
+        if idleProjects > 0 && idleProjectBytes > 0 {
+            parts.append(L("{0} projeye uzun süredir dokunulmadı; önbellekleri {1} tutuyor.", idleProjects, bytes(idleProjectBytes)))
+        }
+        return parts.joined(separator: " ")
+    }
+}

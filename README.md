@@ -24,6 +24,7 @@
 🌍 **Your world mirrors your Mac.** As caches and junk pile up, the globe on the home screen gets dirty. Clean up and it turns blue again.
 
 - **Cleanup:** Removes caches from apps, browsers, creative tools (After Effects, Premiere, DaVinci Resolve) and developer tools, plus old logs, leftover macOS installers and System Data. You choose **Clean** or **Keep** for each app and see how much space you'll get back before anything happens.
+- **Projects (new in 0.8):** Finds your After Effects and Premiere Pro projects and shows what piled up next to each one: preview renders, media caches, auto-saves, proxies and Media Encoder leftovers. Projects you haven't saved in 30 to 180 days are flagged, and one click selects only the caches that rebuild themselves. Project files, media and renders are never offered; everything goes to the Trash. External disks can be added.
 - **Full scan:** Lists your apps, videos, images and documents by size. Sort them, multi-select, and move what you don't need to the Trash.
 - **Analysis:** Shows which apps are open and how much memory, CPU and disk each one uses, which ones you use most, and which you haven't opened in months. You can quit, force quit or uninstall them.
 - **System status:** Live CPU, memory, disk and battery. Free up memory in one click and trim the apps that start at login.
@@ -37,6 +38,7 @@ Kartov now keeps an eye on your Mac in the background, once a minute. It only re
 
 - **Alerts:** an app straining the processor for minutes, memory pressure, a disk that is almost full or filling fast, and apps whose files suddenly grow. Work profiles keep it quiet while you render, compile or play.
 - **Disk forecast:** estimates when your disk will be full at the current pace.
+- **Early warning and weekly summary (0.8):** a heads-up when the disk is on track to fill within two weeks, and one notification each Monday with how the disk moved, what was cleaned, alerts, crashes and untouched projects.
 - **Energy:** live per-app power and what drained the battery over the last 24 hours.
 - **Crashes:** 30 days of crash, hang and unexpected-restart reports, explained in plain words.
 - **Privacy:** which apps can use your camera, microphone, screen, files, contacts and more, with apps you no longer use or have removed listed first.

@@ -96,6 +96,9 @@ struct SettingsView: View {
             SettingsRow(L("Aniden büyüyen programlar"), note: L("Programların Library dosyaları altı saatte bir ölçülür.")) {
                 Toggle("", isOn: Binding(get: { guardian.watchGrowth }, set: { guardian.watchGrowth = $0 })).labelsHidden()
             }
+            SettingsRow(L("Haftalık özet"), note: L("Pazartesi günleri tek bir bildirim: disk, temizlik, uyarılar, çökmeler ve dokunulmayan projeler.")) {
+                Toggle("", isOn: Binding(get: { guardian.weeklySummary }, set: { guardian.weeklySummary = $0 })).labelsHidden()
+            }
             Button(L("Gözetim ölçümlerini sıfırla")) { guardian.resetData() }
                 .buttonStyle(.plain).font(.system(size: 12)).foregroundStyle(KColor.accentSoft)
         }

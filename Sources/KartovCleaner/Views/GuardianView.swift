@@ -182,8 +182,8 @@ struct AlertRow: View {
     private var tint: Color {
         switch alert.kind {
         case .diskLow, .memory: return KColor.heat
-        case .cpu, .thermal, .diskBurst: return KColor.warning
-        case .appGrowth: return KColor.accent
+        case .cpu, .thermal, .diskBurst, .forecast: return KColor.warning
+        case .appGrowth, .weekly: return KColor.accent
         }
     }
 
@@ -225,6 +225,10 @@ struct AlertRow: View {
             Button(L("Analiz'de aç")) { model.section = .analysis }.buttonStyle(SecondaryButtonStyle())
         case .diskLow, .diskBurst:
             Button(L("Tam tarama")) { model.section = .fullScan }.buttonStyle(SecondaryButtonStyle())
+        case .forecast:
+            Button(L("Projeler")) { model.section = .projects }.buttonStyle(SecondaryButtonStyle())
+        case .weekly:
+            EmptyView()
         }
     }
 }

@@ -67,10 +67,8 @@ struct AnalysisView: View {
             HStack {
                 Label(L("Şu an açık olanlar"), systemImage: "play.circle").font(.system(size: 14, weight: .semibold))
                 Spacer()
-                Picker("", selection: Binding(get: { model.runningSort }, set: { model.runningSort = $0 })) {
-                    ForEach(AppModel.RunningSort.allCases) { s in Text(s.title).tag(s) }
-                }
-                .pickerStyle(.segmented).labelsHidden().frame(width: 240)
+                CapsulePicker(options: AppModel.RunningSort.allCases, title: { $0.title },
+                              selection: model.runningSort) { model.runningSort = $0 }
             }
             HStack(spacing: 10) {
                 Text(L("Program")).frame(maxWidth: .infinity, alignment: .leading)
