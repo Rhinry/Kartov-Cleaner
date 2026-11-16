@@ -10,6 +10,22 @@
       },
       "body": {},
       "expires": "2026-11-17"
+    },
+    {
+      "id": "2026-11-16-test-2",
+      "title": {
+        "tr": "İkinci test duyurusu",
+        "en": "Second test announcement",
+        "de": "Zweite Testankündigung",
+        "es": "Segundo anuncio de prueba"
+      },
+      "body": {
+        "tr": "Bu kartı görüyorsan duyurular çalışıyor. Başka bir şey yapmana gerek yok.",
+        "en": "If you can see this card, announcements are working. You don't need to do anything.",
+        "de": "Wenn du diese Karte siehst, funktionieren Ankündigungen. Du musst nichts tun.",
+        "es": "Si ves esta tarjeta, los anuncios funcionan. No tienes que hacer nada."
+      },
+      "expires": "2026-11-17"
     }
   ]
 }
