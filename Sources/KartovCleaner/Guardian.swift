@@ -7,7 +7,7 @@ import KartovCore
 
 /// Something Gözetim noticed.
 struct GuardianAlert: Codable, Identifiable, Hashable {
-    enum Kind: String, Codable { case cpu, memory, diskLow, diskBurst, appGrowth, thermal, forecast, weekly }
+    enum Kind: String, Codable { case cpu, memory, diskLow, diskBurst, appGrowth, thermal, forecast, weekly, announcement }
     var id: UUID
     var date: Date
     var kind: Kind
@@ -16,6 +16,8 @@ struct GuardianAlert: Codable, Identifiable, Hashable {
     var bundleID: String?
     var appName: String?
     var read: Bool
+    /// Announcements only: an https link opened when the user clicks.
+    var link: String? = nil
 
     var symbol: String {
         switch kind {
@@ -27,6 +29,7 @@ struct GuardianAlert: Codable, Identifiable, Hashable {
         case .thermal: return "thermometer.high"
         case .forecast: return "hourglass"
         case .weekly: return "calendar"
+        case .announcement: return "megaphone.fill"
         }
     }
 }
@@ -431,7 +434,7 @@ final class Guardian: ObservableObject {
         weeklyBusy = true
         let weekAgo = now.addingTimeInterval(-7 * 86_400)
         let diskDelta = WeeklyDigest.diskChange(state.disk, now: now)
-        let alertCount = alerts.filter { $0.date >= weekAgo && $0.kind != .weekly }.count
+        let alertCount = alerts.filter { $0.date >= weekAgo && $0.kind != .weekly && $0.kind != .announcement }.count
         let growthName = growth.first?.name
         let growthBytes = growth.first?.delta ?? 0
         let idle = ProjectCaches.storedSummary
@@ -569,6 +572,26 @@ final class Guardian: ObservableObject {
             content.body = detail
             content.sound = .default
             center.add(UNNotificationRequest(identifier: id, content: content, trigger: nil))
+        }
+    }
+
+    /// A message from the developer (see AnnouncementCenter): listed with the alerts and sent as a notification.
+    func announce(id: String, title: String, detail: String, link: String?) {
+        let a = GuardianAlert(id: UUID(), date: Date(), kind: .announcement, title: title, detail: detail,
+                              bundleID: nil, appName: nil, read: false, link: link)
+        alerts.insert(a, at: 0)
+        if alerts.count > 100 { alerts.removeLast(alerts.count - 100) }
+        save()
+        guard !ProfileStore.shared.holdNotifications else { return }
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
+            guard granted else { return }
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = detail
+            content.sound = .default
+            if let link { content.userInfo = ["link": link] }
+            center.add(UNNotificationRequest(identifier: "kartov-announce-" + id, content: content, trigger: nil))
         }
     }
 

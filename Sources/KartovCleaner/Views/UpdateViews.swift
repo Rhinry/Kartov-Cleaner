@@ -133,6 +133,7 @@ struct UpdateSheet: View {
 /// Settings card: version, automatic checks, check now.
 struct UpdateSettingsCard: View {
     @ObservedObject var updater = Updater.shared
+    @ObservedObject var announcements = AnnouncementCenter.shared
     var body: some View {
         SettingsCard(title: L("Güncellemeler"), symbol: "arrow.down.circle") {
             SettingsRow(L("Yüklü sürüm"), note: updater.repo.map { L("Kaynak: github.com/{0}", $0) }
@@ -149,6 +150,10 @@ struct UpdateSettingsCard: View {
                 .labelsHidden().fixedSize()
             }
             .disabled(!updater.autoCheck)
+            SettingsRow(L("Duyurular"), note: L("Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.")) {
+                Toggle("", isOn: Binding(get: { announcements.enabled }, set: { announcements.enabled = $0 })).labelsHidden()
+            }
+            .disabled(updater.repo == nil)
             SettingsRow(L("Son yenilikler"), note: L("Her sürümde neyin değiştiği")) {
                 Button(L("Göster")) { updater.openWhatsNew() }.buttonStyle(SecondaryButtonStyle())
             }

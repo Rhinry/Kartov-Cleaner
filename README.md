@@ -31,6 +31,7 @@
 - **Auto maintenance:** Cleans the categories you pick, on the day and time you choose. It never touches your personal files.
 - **Menu bar:** One click on the little globe cleans, optimizes, or does both.
 - **Updates:** Lets you know when a new version is out and installs it only if you say so.
+- **Announcements (0.8.1):** short news from the developer, read from [`announcements.json`](announcements.json) in this repository and shown once as a notification. No server, no tracking; can be turned off in Settings.
 
 ### Guardian (new in 0.7)
 

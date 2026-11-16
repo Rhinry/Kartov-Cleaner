@@ -183,7 +183,7 @@ struct AlertRow: View {
         switch alert.kind {
         case .diskLow, .memory: return KColor.heat
         case .cpu, .thermal, .diskBurst, .forecast: return KColor.warning
-        case .appGrowth, .weekly: return KColor.accent
+        case .appGrowth, .weekly, .announcement: return KColor.accent
         }
     }
 
@@ -229,6 +229,10 @@ struct AlertRow: View {
             Button(L("Projeler")) { model.section = .projects }.buttonStyle(SecondaryButtonStyle())
         case .weekly:
             EmptyView()
+        case .announcement:
+            if let s = alert.link, let url = URL(string: s), url.scheme == "https" {
+                Button(L("Aç")) { NSWorkspace.shared.open(url) }.buttonStyle(SecondaryButtonStyle())
+            }
         }
     }
 }

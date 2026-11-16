@@ -72,8 +72,13 @@ hdiutil detach "$VOL" -quiet || hdiutil detach "$VOL" -force -quiet
 mkdir -p "dist"
 OUT="dist/$NAME $VERSION.dmg"
 rm -f "$OUT"
-hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -o "$OUT" >>/tmp/kartov-dmg.log 2>&1 \
-  || fail "Could not compress the DMG." /tmp/kartov-dmg.log
+# Right after detaching, macOS can still hold the image for a moment ("Resource temporarily unavailable"): retry.
+converted=""
+for attempt in 1 2 3; do
+  if hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -ov -o "$OUT" >>/tmp/kartov-dmg.log 2>&1; then converted=1; break; fi
+  sleep 3
+done
+[ -n "$converted" ] || fail "Could not compress the DMG." /tmp/kartov-dmg.log
 rm -rf "$WORK"
 
 if [ -n "$IDENTITY" ]; then

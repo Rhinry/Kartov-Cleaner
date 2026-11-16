@@ -218,15 +218,7 @@ final class Updater: NSObject, ObservableObject {
     }
 
     /// "0.10" > "0.9", "1.0" == "1".
-    static func isNewer(_ a: String, than b: String) -> Bool {
-        let pa = a.split(separator: ".").map { Int($0.filter(\.isNumber)) ?? 0 }
-        let pb = b.split(separator: ".").map { Int($0.filter(\.isNumber)) ?? 0 }
-        for i in 0..<max(pa.count, pb.count) {
-            let x = i < pa.count ? pa[i] : 0, y = i < pb.count ? pb[i] : 0
-            if x != y { return x > y }
-        }
-        return false
-    }
+    static func isNewer(_ a: String, than b: String) -> Bool { AppVersion.isNewer(a, than: b) }
 
     // MARK: telling the user
 
@@ -427,8 +419,16 @@ final class Updater: NSObject, ObservableObject {
 extension Updater: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
-        let fromGuardian = response.notification.request.identifier.hasPrefix("kartov-guardian")
+        let id = response.notification.request.identifier
+        let fromGuardian = id.hasPrefix("kartov-guardian") || id.hasPrefix("kartov-announce")
+        let link = (response.notification.request.content.userInfo["link"] as? String)
+            .flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil }
         Task { @MainActor in
+            if let link {
+                NSWorkspace.shared.open(link)
+                completionHandler()
+                return
+            }
             StatusBar.shared.openApp()
             if fromGuardian {
                 NotificationCenter.default.post(name: .kartovOpenGuardian, object: nil)

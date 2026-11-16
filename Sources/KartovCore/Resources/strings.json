@@ -857,7 +857,9 @@
   "{0} projeye {1} gündür dokunmadın; kendiliğinden yeniden oluşan önbellekleri {2} tutuyor.": "You have not touched {0} projects for {1} days; their caches that rebuild themselves take {2}.",
   "{0} uyarı, {1} çökme.": "{0} alerts, {1} crashes.",
   "{0} · son kayıt {1} · {2}": "{0} · last saved {1} · {2}",
-  "Önizleme renderları": "Preview renders"
+  "Önizleme renderları": "Preview renders",
+  "Duyurular": "Announcements",
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Short news from the developer: they arrive as notifications and stay in Guardian."
  },
  "de": {
   "Uygulama": "App",
@@ -1717,7 +1719,9 @@
   "{0} projeye {1} gündür dokunmadın; kendiliğinden yeniden oluşan önbellekleri {2} tutuyor.": "Du hast {0} Projekte seit {1} Tagen nicht angefasst; ihre sich selbst neu aufbauenden Caches belegen {2}.",
   "{0} uyarı, {1} çökme.": "{0} Warnungen, {1} Abstürze.",
   "{0} · son kayıt {1} · {2}": "{0} · zuletzt gesichert {1} · {2}",
-  "Önizleme renderları": "Vorschau-Renderings"
+  "Önizleme renderları": "Vorschau-Renderings",
+  "Duyurular": "Ankündigungen",
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Kurze Neuigkeiten vom Entwickler: Sie kommen als Mitteilung und bleiben im Wächter."
  },
  "es": {
   "Uygulama": "App",
@@ -2577,6 +2581,8 @@
   "{0} projeye {1} gündür dokunmadın; kendiliğinden yeniden oluşan önbellekleri {2} tutuyor.": "Llevas {1} días sin tocar {0} proyectos; sus cachés que se regeneran solas ocupan {2}.",
   "{0} uyarı, {1} çökme.": "{0} avisos, {1} fallos.",
   "{0} · son kayıt {1} · {2}": "{0} · guardado {1} · {2}",
-  "Önizleme renderları": "Renders de previsualización"
+  "Önizleme renderları": "Renders de previsualización",
+  "Duyurular": "Anuncios",
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Noticias breves del desarrollador: llegan como notificación y quedan en Vigilancia."
  }
 }

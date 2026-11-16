@@ -379,6 +379,7 @@ final class AppModel: ObservableObject {
         scheduleAutoCheck()
         StatusBar.shared.install(model: self)
         Updater.shared.start()
+        AnnouncementCenter.shared.start()
         Guardian.shared.start()
         // A new work profile changes what is kept: redraw everything that depends on it.
         profileWatch = ProfileStore.shared.objectWillChange.sink { [weak self] _ in
