@@ -34,6 +34,12 @@ final class AnnouncementsTests: XCTestCase {
                        ["a", "new-only", "bad-link"])
     }
 
+    func testNotesDisplay() {
+        let notes = "## Kartov Cleaner 0.8.1\n\n- **Projects:** new tab\n  - sub item\n### Fixes\n- one\n\n\nInstall: drag it."
+        XCTAssertEqual(ReleaseNotes.display(notes),
+                       "• **Projects:** new tab\n    • sub item\n**Fixes**\n• one\n\nInstall: drag it.")
+    }
+
     func testExpiryIsInclusive() {
         let a = Announcement(id: "x", title: ["en": "x"], body: [:], expires: "2026-11-16")
         let f = DateFormatter(); f.dateFormat = "yyyy-MM-dd HH:mm"

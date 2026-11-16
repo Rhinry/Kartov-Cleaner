@@ -859,7 +859,12 @@
   "{0} · son kayıt {1} · {2}": "{0} · last saved {1} · {2}",
   "Önizleme renderları": "Preview renders",
   "Duyurular": "Announcements",
-  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Short news from the developer: they arrive as notifications and stay in Guardian."
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Short news from the developer: they arrive as notifications and stay in Guardian.",
+  "Duyuru": "Announcement",
+  "{0} duyuru daha": "{0} more",
+  "Yeni bir duyurunuz var": "You have a new announcement",
+  "{0} yeni duyurunuz var": "You have {0} new announcements",
+  "Gözetim'deki uyarılarda da durur.": "It also stays in Guardian's alerts."
  },
  "de": {
   "Uygulama": "App",
@@ -1721,7 +1726,12 @@
   "{0} · son kayıt {1} · {2}": "{0} · zuletzt gesichert {1} · {2}",
   "Önizleme renderları": "Vorschau-Renderings",
   "Duyurular": "Ankündigungen",
-  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Kurze Neuigkeiten vom Entwickler: Sie kommen als Mitteilung und bleiben im Wächter."
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Kurze Neuigkeiten vom Entwickler: Sie kommen als Mitteilung und bleiben im Wächter.",
+  "Duyuru": "Ankündigung",
+  "{0} duyuru daha": "{0} weitere",
+  "Yeni bir duyurunuz var": "Du hast eine neue Ankündigung",
+  "{0} yeni duyurunuz var": "Du hast {0} neue Ankündigungen",
+  "Gözetim'deki uyarılarda da durur.": "Bleibt auch in den Warnungen des Wächters."
  },
  "es": {
   "Uygulama": "App",
@@ -2583,6 +2593,11 @@
   "{0} · son kayıt {1} · {2}": "{0} · guardado {1} · {2}",
   "Önizleme renderları": "Renders de previsualización",
   "Duyurular": "Anuncios",
-  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Noticias breves del desarrollador: llegan como notificación y quedan en Vigilancia."
+  "Geliştiriciden kısa haberler: bildirim olarak gelir, Gözetim'de de durur.": "Noticias breves del desarrollador: llegan como notificación y quedan en Vigilancia.",
+  "Duyuru": "Anuncio",
+  "{0} duyuru daha": "{0} más",
+  "Yeni bir duyurunuz var": "Tienes un anuncio nuevo",
+  "{0} yeni duyurunuz var": "Tienes {0} anuncios nuevos",
+  "Gözetim'deki uyarılarda da durur.": "También queda en los avisos de Vigilancia."
  }
 }

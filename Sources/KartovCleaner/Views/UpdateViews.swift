@@ -48,8 +48,7 @@ struct UpdateSheet: View {
                         Text(L("Yenilikler")).font(.system(size: 12, weight: .semibold)).foregroundStyle(KColor.textMuted)
                         ScrollView {
                             Text(r.notes.isEmpty ? AttributedString(L("Bu sürüm için not yazılmamış."))
-                                 : ((try? AttributedString(markdown: r.notes, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-                                    ?? AttributedString(r.notes)))
+                                 : notesText(r.notes))
                                 .font(.system(size: 13))
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .textSelection(.enabled)
@@ -335,8 +334,7 @@ struct WhatsNewSheet: View {
                 }
             }
             Text(e.notes.isEmpty ? AttributedString(L("Bu sürüm için not yazılmamış."))
-                 : ((try? AttributedString(markdown: e.notes, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-                    ?? AttributedString(e.notes)))
+                 : notesText(e.notes))
                 .font(.system(size: 13))
                 .foregroundStyle(KColor.text.opacity(0.9))
                 .textSelection(.enabled)
@@ -351,4 +349,11 @@ struct WhatsNewSheet: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(isCurrent ? KColor.accent.opacity(0.08) : KColor.surface2))
         .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(isCurrent ? KColor.accent.opacity(0.35) : Color.clear))
     }
+}
+
+/// Release notes ready for a Text: headings tidied, bullets drawn, inline markdown rendered.
+func notesText(_ notes: String) -> AttributedString {
+    let shown = ReleaseNotes.display(notes)
+    return (try? AttributedString(markdown: shown, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
+        ?? AttributedString(shown)
 }

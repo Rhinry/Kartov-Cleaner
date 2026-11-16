@@ -575,24 +575,14 @@ final class Guardian: ObservableObject {
         }
     }
 
-    /// A message from the developer (see AnnouncementCenter): listed with the alerts and sent as a notification.
+    /// A message from the developer (see AnnouncementCenter): kept in the alert list. The card and the
+    /// "new announcement" notification are AnnouncementCenter's.
     func announce(id: String, title: String, detail: String, link: String?) {
         let a = GuardianAlert(id: UUID(), date: Date(), kind: .announcement, title: title, detail: detail,
                               bundleID: nil, appName: nil, read: false, link: link)
         alerts.insert(a, at: 0)
         if alerts.count > 100 { alerts.removeLast(alerts.count - 100) }
         save()
-        guard !ProfileStore.shared.holdNotifications else { return }
-        let center = UNUserNotificationCenter.current()
-        center.requestAuthorization(options: [.alert, .sound]) { granted, _ in
-            guard granted else { return }
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = detail
-            content.sound = .default
-            if let link { content.userInfo = ["link": link] }
-            center.add(UNNotificationRequest(identifier: "kartov-announce-" + id, content: content, trigger: nil))
-        }
     }
 
     func markAllRead() {

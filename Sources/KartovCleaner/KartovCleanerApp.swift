@@ -48,6 +48,7 @@ struct RootView: View {
         .overlay { AppMapOverlay() }
         .overlay { if model.showLockedSheet { LockedCleanSheet() } }
         .overlay { UpdateOverlay() }
+        .overlay { AnnouncementOverlay() }
         .animation(KMotion.base, value: model.cleanAnimationStart)
         .animation(KMotion.base, value: model.showTutorial)
         .animation(KMotion.base, value: model.hasFullDiskAccess)

@@ -230,9 +230,7 @@ struct AlertRow: View {
         case .weekly:
             EmptyView()
         case .announcement:
-            if let s = alert.link, let url = URL(string: s), url.scheme == "https" {
-                Button(L("Aç")) { NSWorkspace.shared.open(url) }.buttonStyle(SecondaryButtonStyle())
-            }
+            Button(L("Göster")) { AnnouncementCenter.shared.reopen(alert) }.buttonStyle(SecondaryButtonStyle())
         }
     }
 }

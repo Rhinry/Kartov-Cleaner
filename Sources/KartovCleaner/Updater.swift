@@ -420,16 +420,15 @@ extension Updater: UNUserNotificationCenterDelegate {
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler completionHandler: @escaping () -> Void) {
         let id = response.notification.request.identifier
-        let fromGuardian = id.hasPrefix("kartov-guardian") || id.hasPrefix("kartov-announce")
-        let link = (response.notification.request.content.userInfo["link"] as? String)
-            .flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil }
+        let fromGuardian = id.hasPrefix("kartov-guardian")
+        let announcement = id.hasPrefix("kartov-announce")
         Task { @MainActor in
-            if let link {
-                NSWorkspace.shared.open(link)
+            // An announcement opens the app; its card is waiting there.
+            StatusBar.shared.openApp()
+            if announcement {
                 completionHandler()
                 return
             }
-            StatusBar.shared.openApp()
             if fromGuardian {
                 NotificationCenter.default.post(name: .kartovOpenGuardian, object: nil)
             } else {

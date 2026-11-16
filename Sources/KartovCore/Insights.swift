@@ -344,6 +344,35 @@ public enum PathTrasher {
 ///
 /// The app shows the part in its own language, or the English text when there is none.
 public enum ReleaseNotes {
+    /// Notes as they are shown inside the app: the "## Kartov Cleaner X.Y" heading is dropped (the
+    /// window already shows the version), other headings become bold lines and "- " items get a bullet.
+    /// Inline markdown (**bold**, `code`, links) is left for the view to render.
+    public static func display(_ notes: String) -> String {
+        var out: [String] = []
+        for raw in notes.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n") {
+            let t = raw.trimmingCharacters(in: .whitespaces)
+            if t.hasPrefix("#") {
+                let text = t.drop { $0 == "#" }.trimmingCharacters(in: .whitespaces)
+                if text.isEmpty || text.lowercased().hasPrefix("kartov cleaner") { continue }
+                out.append("**" + text + "**")
+            } else if t.hasPrefix("- ") || t.hasPrefix("* ") {
+                let indent = raw.prefix { $0 == " " }.count >= 2 ? "    " : ""
+                out.append(indent + "• " + t.dropFirst(2))
+            } else {
+                out.append(raw)
+            }
+        }
+        // No blank lines at the start or end, at most one in a row.
+        var lines: [String] = []
+        for l in out {
+            let blank = l.trimmingCharacters(in: .whitespaces).isEmpty
+            if blank && (lines.isEmpty || lines.last!.trimmingCharacters(in: .whitespaces).isEmpty) { continue }
+            lines.append(l)
+        }
+        while let last = lines.last, last.trimmingCharacters(in: .whitespaces).isEmpty { lines.removeLast() }
+        return lines.joined(separator: "\n")
+    }
+
     public static func localized(_ body: String, language: String) -> String {
         let text = body.replacingOccurrences(of: "\r\n", with: "\n")
         guard let start = text.range(of: "<!-- kartov-i18n") else {
