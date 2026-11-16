@@ -1,3 +1,15 @@
 {
-  "announcements": []
+  "announcements": [
+    {
+      "id": "2026-11-16-test",
+      "title": {
+        "tr": "Bir test duyurusudur.",
+        "en": "This is a test announcement.",
+        "de": "Dies ist eine Testankündigung.",
+        "es": "Este es un anuncio de prueba."
+      },
+      "body": {},
+      "expires": "2026-11-17"
+    }
+  ]
 }
