@@ -57,7 +57,7 @@ struct FullScanView: View {
                 Image(systemName: "chart.pie.fill").font(.system(size: 50)).foregroundStyle(KColor.accent)
             }
             Text(L("Mac'inde ne nerede?")).font(.system(size: 26, weight: .medium))
-            Text(L("Programlarını, videolarını, görsellerini, müziklerini ve belgelerini boyutlarıyla listeler. İstediğin gibi sıralar, istemediklerini buradan kaldırırsın. Tarama hiçbir şeyi silmez."))
+            Text(L("Programlarını, videolarını, görsellerini, müziklerini ve belgelerini boyutlarıyla listeler. İstediğin gibi sıralar, istemediklerini buradan kaldırırsın. İçeriği aynı kopyaları da bulur. Tarama hiçbir şeyi silmez."))
                 .font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                 .multilineTextAlignment(.center).frame(maxWidth: 460)
             Button { model.startFullScan() } label: { Label(L("Tam taramayı başlat"), systemImage: "chart.pie") }
@@ -90,6 +90,9 @@ struct FullScanView: View {
             .padding(.horizontal, 24).padding(.top, 18).padding(.bottom, 10)
 
             ScrollView {
+                if model.fullShowDuplicates {
+                    DuplicatesList()
+                } else {
                 LazyVStack(spacing: 2) {
                     let list = model.fullVisible
                     if list.isEmpty {
@@ -105,6 +108,7 @@ struct FullScanView: View {
                 }
                 .kCard(padding: 6, radius: 16)
                 .padding(.horizontal, 16).padding(.bottom, 16)
+                }
             }
 
             if !model.fullSelected.isEmpty || model.fullMessage != nil { bottomBar }
@@ -122,12 +126,16 @@ struct FullScanView: View {
                     }
                 }
             }
-            Picker(L("Sırala"), selection: Binding(get: { model.fullSort }, set: { model.fullSort = $0 })) {
-                ForEach(FullSort.allCases) { Text($0.title).tag($0) }
+            // Outside the scrolling row so it is always in sight.
+            duplicatesChip
+            if !model.fullShowDuplicates {
+                Picker(L("Sırala"), selection: Binding(get: { model.fullSort }, set: { model.fullSort = $0 })) {
+                    ForEach(FullSort.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 210)
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 210)
             TextField(L("Ara"), text: Binding(get: { model.fullQuery }, set: { model.fullQuery = $0; model.fullLimit = 200 }))
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 160)
@@ -136,6 +144,11 @@ struct FullScanView: View {
 
     /// Select everything shown (respecting the filter and search), or clear it.
     private var selectionBar: some View {
+        if model.fullShowDuplicates { return AnyView(duplicatesSelectionBar) }
+        return AnyView(listSelectionBar)
+    }
+
+    private var listSelectionBar: some View {
         let visible = model.fullSelectableVisible
         let visibleBytes = visible.reduce(Int64(0)) { $0 + $1.size }
         return HStack(spacing: 10) {
@@ -162,10 +175,66 @@ struct FullScanView: View {
         }
     }
 
+    /// "Kopyalar": identical files, with the space their extra copies take.
+    private var duplicatesChip: some View {
+        let on = model.fullShowDuplicates
+        let none = !model.dupScanning && model.dupGroups.isEmpty
+        return Button {
+            model.fullShowDuplicates = true
+            model.fullFilter = nil
+            model.fullLimit = 200
+        } label: {
+            HStack(spacing: 6) {
+                Text(none ? L("Kopya yok") : L("Kopyalar")).font(.system(size: 12, weight: on ? .semibold : .regular))
+                if model.dupScanning {
+                    ProgressView(value: model.dupProgress).progressViewStyle(.linear).frame(width: 44).controlSize(.small)
+                } else if model.dupReclaimable > 0 {
+                    ReclaimDot()
+                    Text(KBytes.format(model.dupReclaimable)).font(.system(size: 11).monospacedDigit()).foregroundStyle(KColor.heat)
+                }
+            }
+            .padding(.horizontal, 10).frame(height: 28)
+            .background(Capsule().fill(on ? KColor.surface2 : Color.clear))
+            .overlay(Capsule().strokeBorder(on ? KColor.accent : KColor.border))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .disabled(none)
+        .help(model.dupScanning ? L("İçerikler karşılaştırılıyor…") : L("İçeriği birebir aynı dosyalar"))
+    }
+
+    private var duplicatesSelectionBar: some View {
+        let suggested = model.dupSuggested
+        let bytes = suggested.reduce(Int64(0)) { $0 + $1.reclaimable }
+        return HStack(spacing: 10) {
+            Button {
+                model.selectSuggestedDuplicates()
+            } label: {
+                Label(model.dupAllSuggestedSelected ? L("Bunların seçimini kaldır") : L("Önerilenleri seç · {0} dosya · {1}", suggested.count, KBytes.format(bytes)),
+                      systemImage: model.dupAllSuggestedSelected ? "minus.circle" : "checkmark.circle")
+                    .font(.system(size: 12, weight: .semibold))
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(KColor.accent)
+            .disabled(suggested.isEmpty)
+            if !model.fullSelected.isEmpty {
+                Button(L("Seçimi kaldır")) { model.clearFullSelection() }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 12))
+                    .foregroundStyle(KColor.textMuted)
+            }
+            Spacer()
+            Text(L("Her gruptan biri kalır. Tutulacak olanı değiştirmek için ‘Bunu tut’."))
+                .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
+                .lineLimit(1)
+        }
+    }
+
     private func chip(_ kind: DiskKind?, _ title: String, _ bytes: Int64) -> some View {
-        let on = model.fullFilter == kind
+        let on = model.fullFilter == kind && !model.fullShowDuplicates
         return Button {
             model.fullFilter = kind
+            model.fullShowDuplicates = false
             model.fullLimit = 200
         } label: {
             HStack(spacing: 6) {

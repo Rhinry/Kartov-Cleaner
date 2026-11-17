@@ -317,6 +317,14 @@ final class AppModel: ObservableObject {
     private var fullAnchor: String?
     @Published var fullLimit = 200
     @Published var showFullConfirm = false
+    // Kopyalar: identical files among the full scan's entries.
+    @Published var dupGroups: [DuplicateGroup] = []
+    @Published var dupScanning = false
+    @Published var dupProgress: Double = 0
+    @Published var fullShowDuplicates = false
+    /// Group id → the entry the user chose to keep (when it differs from the suggestion).
+    @Published var dupKeep: [String: String] = [:]
+    private var dupTask: Task<Void, Never>?
     @Published var fullMessage: String?
     private var fullTask: Task<Void, Never>?
 
@@ -766,6 +774,11 @@ final class AppModel: ObservableObject {
 
     func startFullScan() {
         fullTask?.cancel()
+        dupTask?.cancel()
+        dupGroups = []
+        dupKeep = [:]
+        dupScanning = false
+        fullShowDuplicates = false
         fullScanning = true
         fullEntries = []
         fullFolders = []
@@ -791,12 +804,79 @@ final class AppModel: ObservableObject {
             fullScanning = false
             fullScanDate = Date()
             klog("tam tarama bitti · \(result.entries.count) öğe")
+            startDuplicateScan(entries: result.entries)
         }
     }
 
     func cancelFullScan() {
         fullTask?.cancel()
+        dupTask?.cancel()
         fullScanning = false
+        dupScanning = false
+    }
+
+    /// Runs after the full scan: compares the contents of same-sized files in the background.
+    private func startDuplicateScan(entries: [DiskEntry]) {
+        dupTask?.cancel()
+        dupScanning = true
+        dupProgress = 0
+        let finder = DuplicateFinder()
+        dupTask = Task {
+            let job = Task.detached(priority: .utility) { () -> [DuplicateGroup] in
+                var last = Date.distantPast
+                return finder.find(in: entries) { done, total in
+                    guard total > 0, Date().timeIntervalSince(last) > 0.1 else { return }
+                    last = Date()
+                    let p = Double(done) / Double(total)
+                    Task { @MainActor [weak self] in self?.dupProgress = p }
+                }
+            }
+            // A detached task does not hear its parent's cancel; pass it on so a new scan stops the old reading.
+            let groups = await withTaskCancellationHandler { await job.value } onCancel: { job.cancel() }
+            guard !Task.isCancelled else { return }
+            dupGroups = groups
+            dupProgress = 1
+            dupScanning = false
+            klog("kopyalar · \(groups.count) grup")
+        }
+    }
+
+    func keepID(for g: DuplicateGroup) -> String {
+        if let k = dupKeep[g.id], g.files.contains(where: { $0.id == k }) { return k }
+        return g.suggestedKeep
+    }
+
+    func setKeep(_ entryID: String, in g: DuplicateGroup) {
+        dupKeep[g.id] = entryID
+        fullSelected.remove(entryID)
+    }
+
+    /// Groups matching the search (file name or folder).
+    var dupVisible: [DuplicateGroup] {
+        let q = fullQuery.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return dupGroups }
+        return dupGroups.filter { g in g.files.contains { $0.entry.url.path.lowercased().contains(q) } }
+    }
+
+    var dupReclaimable: Int64 { dupGroups.reduce(0) { $0 + $1.reclaimable(keeping: keepID(for: $1)) } }
+
+    var dupSuggested: [DuplicateFile] { dupVisible.flatMap { $0.suggested(keeping: keepID(for: $0)) } }
+
+    var dupAllSuggestedSelected: Bool {
+        let s = dupSuggested
+        return !s.isEmpty && s.allSatisfy { fullSelected.contains($0.id) }
+    }
+
+    func selectSuggestedDuplicates() {
+        let s = dupSuggested
+        if dupAllSuggestedSelected { for f in s { fullSelected.remove(f.id) } }
+        else { for f in s { fullSelected.insert(f.id) } }
+        fullAnchor = nil
+    }
+
+    /// Whether this entry is the one kept in its duplicate group.
+    func isKept(_ id: String) -> Bool {
+        dupGroups.contains { g in keepID(for: g) == id && g.files.contains { $0.id == id } }
     }
 
     /// What the list shows: filtered by kind and search, sorted, capped for speed.
@@ -820,6 +900,13 @@ final class AppModel: ObservableObject {
     /// Click: toggles one row. Shift-click: selects every row between the last click and this one.
     func toggleFull(_ e: DiskEntry) {
         guard !e.protected else { return }
+        if fullShowDuplicates {
+            // One file of every group always stays.
+            guard !isKept(e.id) else { return }
+            if fullSelected.contains(e.id) { fullSelected.remove(e.id) } else { fullSelected.insert(e.id) }
+            fullAnchor = nil
+            return
+        }
         if NSEvent.modifierFlags.contains(.shift), let anchor = fullAnchor {
             let list = Array(fullVisible.prefix(fullLimit))
             if let a = list.firstIndex(where: { $0.id == anchor }), let b = list.firstIndex(where: { $0.id == e.id }) {
@@ -854,7 +941,12 @@ final class AppModel: ObservableObject {
     }
 
     var fullSelectedEntries: [DiskEntry] { fullEntries.filter { fullSelected.contains($0.id) } }
-    var fullSelectedBytes: Int64 { fullSelectedEntries.reduce(0) { $0 + $1.size } }
+    /// Clones count as what they really free (almost nothing).
+    var fullSelectedBytes: Int64 {
+        var real: [String: Int64] = [:]
+        for g in dupGroups { for f in g.files where fullSelected.contains(f.id) { real[f.id] = f.reclaimable } }
+        return fullSelectedEntries.reduce(0) { $0 + (real[$1.id] ?? $1.size) }
+    }
 
     /// Running apps among the selection must be closed first.
     var fullSelectedRunningApps: [String] {
@@ -876,6 +968,9 @@ final class AppModel: ObservableObject {
             let record = await Task.detached { remover.trash(picked) }.value
             let moved = Set(record.items.filter { $0.status == .trashed }.map(\.originalPath))
             fullEntries.removeAll { moved.contains($0.url.path) }
+            dupGroups = dupGroups.removing(paths: moved)
+            let alive = Set(dupGroups.map(\.id))
+            dupKeep = dupKeep.filter { alive.contains($0.key) }
             fullSelected = []
             history.insert(record, at: 0)
             store.update { $0.records.insert(record, at: 0) }
