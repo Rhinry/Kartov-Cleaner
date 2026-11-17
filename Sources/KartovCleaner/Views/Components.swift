@@ -9,12 +9,11 @@ struct PrimaryButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: large ? 15 : 13, weight: .bold))
+            .font(.system(size: large ? 15 : 13, weight: .semibold))
             .foregroundStyle(KColor.onAccent)
             .padding(.horizontal, large ? 24 : 16)
             .frame(height: large ? 46 : 34)
             .background(Capsule().fill(KGradient.accent).opacity(configuration.isPressed ? 0.8 : 1))
-            .shadow(color: KColor.accent.opacity(isEnabled ? 0.35 : 0), radius: 10, y: 4)
             .opacity(isEnabled ? 1 : 0.4)
             .contentShape(Capsule())
     }
@@ -49,7 +48,7 @@ struct CapsulePicker<T: Hashable & Identifiable>: View {
                 let selected = option == selection
                 Button { onSelect(option) } label: {
                     Text(title(option)).font(.system(size: 12, weight: selected ? .semibold : .medium))
-                        .foregroundStyle(selected ? Color.white : KColor.textMuted)
+                        .foregroundStyle(selected ? KColor.onAccent : KColor.textMuted)
                         .padding(.horizontal, 12).frame(height: 26)
                         .background(Capsule().fill(selected ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(Color.clear)))
                         .contentShape(Capsule())
@@ -121,7 +120,7 @@ struct AppIcon: View {
             } else {
                 RoundedRectangle(cornerRadius: 7)
                     .fill(hot ? KColor.heat.opacity(0.14) : KColor.surface2)
-                    .overlay(Text(monogram).font(.system(size: 11, weight: .bold))
+                    .overlay(Text(monogram).font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(hot ? KColor.heatSoft : KColor.textMuted))
                     .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(KColor.border))
             }
@@ -146,8 +145,8 @@ struct BytesText: View {
     var color: Color = KColor.text
     var body: some View {
         Text(KBytes.format(bytes))
-            .font(.system(size: size, weight: .bold).monospacedDigit())
-            .kerning(size > 40 ? -1.2 : -0.3)
+            .font(.system(size: size, weight: .medium).monospacedDigit())
+            .kerning(size >= 40 ? -size * 0.02 : 0)
             .foregroundStyle(color)
     }
 }

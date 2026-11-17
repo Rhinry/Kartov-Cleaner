@@ -67,18 +67,28 @@ end tell
 APPLESCRIPT
 [ $? -eq 0 ] || echo "  (Window layout could not be applied; the DMG still works. Details: /tmp/kartov-finder.log)"
 sync
-hdiutil detach "$VOL" -quiet || hdiutil detach "$VOL" -force -quiet
+# Finder can keep the volume busy for a moment after the layout: detach, and wait until macOS
+# really lets go of the image before compressing it ("Resource temporarily unavailable" otherwise).
+for attempt in 1 2 3 4 5; do
+  hdiutil detach "$VOL" -quiet 2>/dev/null || hdiutil detach "$VOL" -force -quiet 2>/dev/null
+  hdiutil info | grep -qF "$RW" || break
+  sleep 2
+done
+sleep 2
 
 mkdir -p "dist"
 OUT="dist/$NAME $VERSION.dmg"
+TMPOUT="$WORK/out.dmg"
 rm -f "$OUT"
-# Right after detaching, macOS can still hold the image for a moment ("Resource temporarily unavailable"): retry.
 converted=""
-for attempt in 1 2 3; do
-  if hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -ov -o "$OUT" >>/tmp/kartov-dmg.log 2>&1; then converted=1; break; fi
-  sleep 3
+for attempt in 1 2 3 4 5; do
+  rm -f "$TMPOUT"
+  if hdiutil convert "$RW" -format UDZO -imagekey zlib-level=9 -o "$TMPOUT" >>/tmp/kartov-dmg.log 2>&1; then converted=1; break; fi
+  echo "  (compress attempt $attempt failed, retrying…)"
+  sleep 4
 done
 [ -n "$converted" ] || fail "Could not compress the DMG." /tmp/kartov-dmg.log
+mv "$TMPOUT" "$OUT" || fail "Could not move the DMG into dist."
 rm -rf "$WORK"
 
 if [ -n "$IDENTITY" ]; then

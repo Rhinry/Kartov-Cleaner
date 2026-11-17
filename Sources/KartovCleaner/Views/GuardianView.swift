@@ -42,16 +42,15 @@ struct GuardianTabs: View {
                         Image(systemName: p.symbol).font(.system(size: 11, weight: .semibold))
                         Text(p.title).font(.system(size: 12, weight: selected ? .semibold : .medium))
                         if p == .overview && guardian.unread > 0 {
-                            Text("\(guardian.unread)").font(.system(size: 10, weight: .bold).monospacedDigit())
+                            Text("\(guardian.unread)").font(.system(size: 10, weight: .semibold).monospacedDigit())
                                 .padding(.horizontal, 6).padding(.vertical, 1)
-                                .background(Capsule().fill(selected ? Color.white.opacity(0.22) : KColor.heat.opacity(0.18)))
-                                .foregroundStyle(selected ? Color.white : KColor.heatSoft)
+                                .background(Capsule().fill(selected ? KColor.onAccent.opacity(0.14) : KColor.heat.opacity(0.18)))
+                                .foregroundStyle(selected ? KColor.onAccent : KColor.heatSoft)
                         }
                     }
-                    .foregroundStyle(selected ? Color.white : KColor.textMuted)
+                    .foregroundStyle(selected ? KColor.onAccent : KColor.textMuted)
                     .padding(.horizontal, 12).frame(height: 28)
                     .background(Capsule().fill(selected ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(Color.clear)))
-                    .shadow(color: KColor.accent.opacity(selected ? 0.4 : 0), radius: 6, y: 2)
                     .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -92,7 +91,7 @@ struct GuardianOverviewPage: View {
                 .frame(width: 54, height: 54)
                 .background(Circle().fill((guardian.enabled ? KColor.success : KColor.textMuted).opacity(0.14)))
             VStack(alignment: .leading, spacing: 4) {
-                Text(guardian.enabled ? L("Gözetim açık") : L("Gözetim kapalı")).font(.system(size: 22, weight: .bold))
+                Text(guardian.enabled ? L("Gözetim açık") : L("Gözetim kapalı")).font(.system(size: 22, weight: .medium))
                 Text(statusLine).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -257,7 +256,7 @@ struct ForecastCard: View {
         let disk = DiskInfo.read()
         VStack(alignment: .leading, spacing: 10) {
             Label(L("Disk tahmini"), systemImage: "calendar.badge.clock").font(.system(size: 14, weight: .semibold))
-            Text(headline(f)).font(.system(size: 26, weight: .bold).monospacedDigit())
+            Text(headline(f)).font(.system(size: 26, weight: .medium).monospacedDigit())
                 .foregroundStyle(color(f))
             Text(detail(f)).font(.system(size: 12)).foregroundStyle(KColor.textMuted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -394,16 +393,16 @@ struct EnergyPage: View {
                 .background(Circle().fill(KColor.success.opacity(0.14)))
             VStack(alignment: .leading, spacing: 4) {
                 if let b {
-                    Text(L("Pil %{0}", b.percent)).font(.system(size: 22, weight: .bold).monospacedDigit())
+                    Text(L("Pil %{0}", b.percent)).font(.system(size: 22, weight: .medium).monospacedDigit())
                     Text(batteryLine(b)).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                 } else {
-                    Text(L("Prizden çalışıyor")).font(.system(size: 22, weight: .bold))
+                    Text(L("Prizden çalışıyor")).font(.system(size: 22, weight: .medium))
                     Text(L("Bu Mac'te pil yok; programların enerji kullanımı yine de gösterilir.")).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                 }
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
-                Text(powerText(total)).font(.system(size: 22, weight: .bold).monospacedDigit())
+                Text(powerText(total)).font(.system(size: 22, weight: .medium).monospacedDigit())
                 Text(L("açık programların toplamı")).font(.system(size: 11)).foregroundStyle(KColor.textMuted)
             }
         }
@@ -486,7 +485,7 @@ struct CrashPage: View {
             HStack(spacing: 12) {
                 StatTile(symbol: "xmark.octagon.fill", tint: KColor.heat, value: "\(c.filter { $0.kind == .crash }.count)", label: L("çökme"))
                 StatTile(symbol: "hourglass", tint: KColor.warning, value: "\(c.filter { $0.kind == .hang }.count)", label: L("donma"))
-                StatTile(symbol: "gauge.with.dots.needle.67percent", tint: Color.purple, value: "\(c.filter { $0.kind == .resource }.count)", label: L("kaynak aşımı"))
+                StatTile(symbol: "gauge.with.dots.needle.67percent", tint: KColor.textMuted, value: "\(c.filter { $0.kind == .resource }.count)", label: L("kaynak aşımı"))
                 StatTile(symbol: "bolt.trianglebadge.exclamationmark.fill", tint: KColor.heat, value: "\(c.filter { $0.kind == .panic }.count)", label: L("yeniden başlama"))
             }
             VStack(alignment: .leading, spacing: 10) {
@@ -532,7 +531,7 @@ struct CrashGroupRow: View {
                     HStack(spacing: 6) {
                         if group.crashes > 0 { CountChip(text: L("{0} çökme", group.crashes), color: KColor.heat) }
                         if group.hangs > 0 { CountChip(text: L("{0} donma", group.hangs), color: KColor.warning) }
-                        if group.resource > 0 { CountChip(text: L("{0} kaynak aşımı", group.resource), color: Color.purple) }
+                        if group.resource > 0 { CountChip(text: L("{0} kaynak aşımı", group.resource), color: KColor.textMuted) }
                         if group.panics > 0 { CountChip(text: L("{0} yeniden başlama", group.panics), color: KColor.heat) }
                     }
                     Spacer()
@@ -679,7 +678,7 @@ struct ServiceChip: View {
                     .foregroundStyle(selected ? Color.white : (sensitive ? KColor.warning : KColor.accent))
                 Text(title).font(.system(size: 12, weight: .medium)).lineLimit(1)
                 Spacer(minLength: 4)
-                Text("\(count)").font(.system(size: 12, weight: .bold).monospacedDigit())
+                Text("\(count)").font(.system(size: 12, weight: .semibold).monospacedDigit())
             }
             .foregroundStyle(selected ? Color.white : KColor.text)
             .padding(.horizontal, 12).frame(height: 34)

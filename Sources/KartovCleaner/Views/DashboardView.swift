@@ -42,7 +42,7 @@ struct DashboardView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(L("Genel bakış")).font(.system(size: 28, weight: .bold))
+                    Text(L("Genel bakış")).font(.system(size: 28, weight: .medium))
                     Text(subline).font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                 }
                 HStack(alignment: .top, spacing: 16) {
@@ -65,9 +65,9 @@ struct DashboardView: View {
 
     private var subline: String {
         if model.phase == .scanning { return L("Mac'ine bakılıyor…") }
-        if model.lastScanDate == nil && model.items.isEmpty { return L("Başlamak için Temizlik kartından tara.") }
-        if model.selectedBytes >= 5_000_000_000 { return L("Dünyan kirlenmiş; temizlik zamanı.") }
-        return L("Mac'in iyi durumda.")
+        if model.lastScanDate == nil && model.items.isEmpty { return L("Başlamak için Temizlik kartından tara") }
+        if model.selectedBytes >= 5_000_000_000 { return L("Dünyan kirlenmiş; temizlik zamanı") }
+        return L("Mac'in iyi durumda")
     }
 }
 
@@ -80,16 +80,15 @@ struct HomeCard<Visual: View, Action: View>: View {
     let figure: String
     let figureColor: Color
     let line: String
+    var lineDot = false
     @ViewBuilder var visual: () -> Visual
     @ViewBuilder var action: () -> Action
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8).fill(glow.opacity(0.16)).frame(width: 26, height: 26)
-                    Image(systemName: symbol).font(.system(size: 12, weight: .bold)).foregroundStyle(glow)
-                }
+                Image(systemName: symbol).font(.system(size: 13, weight: .medium)).foregroundStyle(KColor.textMuted)
+                    .frame(width: 18)
                 Text(title).font(.system(size: 13, weight: .semibold))
             }
             visual()
@@ -97,12 +96,15 @@ struct HomeCard<Visual: View, Action: View>: View {
                 .frame(height: 160)
                 .padding(.vertical, 8)
             Text(figure)
-                .font(.system(size: 30, weight: .bold).monospacedDigit())
+                .font(.system(size: 30, weight: .medium).monospacedDigit())
                 .foregroundStyle(figureColor)
                 .lineLimit(1).minimumScaleFactor(0.6)
-            Text(line).font(.system(size: 12)).foregroundStyle(KColor.textMuted)
-                .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                .frame(height: 34, alignment: .topLeading)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if lineDot { ReclaimDot().alignmentGuide(.firstTextBaseline) { $0[.bottom] - 1 } }
+                Text(line).font(.system(size: 12)).foregroundStyle(KColor.textMuted)
+                    .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(height: 34, alignment: .topLeading)
             Spacer(minLength: 10)
             action()
         }
@@ -121,9 +123,10 @@ struct CleanCard: View {
                         gradient: bytes >= 5_000_000_000 ? KGradient.heat : KGradient.accent,
                         glow: bytes >= 5_000_000_000 ? KColor.heat : KColor.accent,
                         figure: never ? L("Taranmadı") : (bytes > 0 ? KBytes.format(bytes) : L("Tertemiz")),
-                        figureColor: never ? KColor.text : (bytes >= 5_000_000_000 ? KColor.heat : (bytes > 0 ? KColor.warning : KColor.success)),
+                        figureColor: KColor.text,
                         line: scanning ? L("bulundu, tarama sürüyor") :
-                            (never ? L("Önbellek ve gereksiz dosyaları bul.") : (bytes > 0 ? L("temizlenebilir") : L("Temizlenecek bir şey yok.")))) {
+                            (never ? L("Önbellek ve gereksiz dosyaları bul") : (bytes > 0 ? L("temizlenebilir") : L("Temizlenecek bir şey yok"))),
+                        lineDot: !scanning && !never && bytes > 0) {
             Globe(dirt: dirtLevel(bytes), speed: scanning ? 1.1 : 0.22, size: 105,
                   shine: !never && bytes == 0 ? 0.5 : 0)
         } action: {
@@ -152,7 +155,7 @@ struct FullScanCard: View {
         return HomeCard(title: L("Tam tarama"), symbol: "chart.pie.fill", gradient: KGradient.violet, glow: Color.purple,
                         figure: model.fullScanning ? L("Taranıyor") : (done ? KBytes.format(total) : L("Ne nerede?")),
                         figureColor: KColor.text,
-                        line: done ? L("programların ve dosyaların kapladığı alan") : L("Programlarını, videolarını ve belgelerini boyutlarıyla gör.")) {
+                        line: done ? L("programların ve dosyaların kapladığı alan") : L("Programlarını, videolarını ve belgelerini boyutlarıyla gör")) {
             KindRing(model: model).frame(width: 140, height: 140)
         } action: {
             Button {
@@ -179,7 +182,7 @@ struct KindRing: View {
                     .stroke(kb.kind.color, style: StrokeStyle(lineWidth: 18, lineCap: .butt))
                     .rotationEffect(.degrees(-90))
             }
-            Image(systemName: "chart.pie.fill").font(.system(size: 26)).foregroundStyle(KGradient.violet)
+            Image(systemName: "chart.pie.fill").font(.system(size: 24)).foregroundStyle(KColor.textMuted)
         }
         .padding(9)
     }
@@ -199,12 +202,12 @@ struct SystemCard: View {
             ZStack {
                 Circle().stroke(KColor.surface2, lineWidth: 14)
                 Circle().trim(from: 0, to: max(0.01, mem))
-                    .stroke(hot ? KGradient.heat : KGradient.success, style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                    .stroke(hot ? KGradient.heat : KGradient.quiet, style: StrokeStyle(lineWidth: 14, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(KMotion.base, value: mem)
                 VStack(spacing: 0) {
                     Text("%\(Int(mem * 100))")
-                        .font(.system(size: 32, weight: .bold).monospacedDigit())
+                        .font(.system(size: 32, weight: .medium).monospacedDigit())
                         .foregroundStyle(hot ? KColor.heat : KColor.text)
                     Text(L("bellek dolu")).font(.system(size: 11, weight: .medium)).foregroundStyle(KColor.textMuted)
                 }
@@ -212,9 +215,7 @@ struct SystemCard: View {
             .frame(width: 136, height: 136)
             .accessibilityElement(children: .combine)
         } action: {
-            HStack(spacing: 8) {
-                Button { model.section = .system } label: { Text(L("Aç")).frame(maxWidth: .infinity) }
-                    .buttonStyle(SecondaryButtonStyle())
+            VStack(spacing: 8) {
                 Button { model.runOptimize("ram") } label: {
                     HStack(spacing: 6) {
                         if model.optimizeBusy == "ram" { ProgressView().controlSize(.small) }
@@ -222,8 +223,10 @@ struct SystemCard: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(PrimaryButtonStyle())
+                .buttonStyle(SecondaryButtonStyle())
                 .disabled(model.optimizeBusy != nil)
+                Button(L("Aç")) { model.section = .system }.buttonStyle(.plain)
+                    .font(.system(size: 12)).foregroundStyle(KColor.textMuted)
             }
         }
     }
@@ -238,12 +241,12 @@ struct AnalysisCard: View {
                         figure: apps.isEmpty ? "…" : (apps.first?.name ?? ""),
                         figureColor: KColor.text,
                         line: apps.first.map { L("en çok belleği o kullanıyor · {0}", KBytes.format(Int64($0.bytes))) }
-                              ?? L("Programların bellek, işlemci ve disk kullanımı.")) {
+                              ?? L("Programların bellek, işlemci ve disk kullanımı")) {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(apps) { a in
                     HStack(spacing: 8) {
                         if let icon = a.icon { Image(nsImage: icon).resizable().frame(width: 20, height: 20) }
-                        Bar(fraction: Double(a.bytes) / maxBytes, tint: Color.purple)
+                        Bar(fraction: Double(a.bytes) / maxBytes, tint: KColor.textMuted.opacity(0.7))
                     }
                 }
             }
@@ -261,14 +264,14 @@ struct CareCard: View {
         HomeCard(title: L("Otomatik bakım"), symbol: "clock.badge.checkmark", gradient: KGradient.accent,
                  glow: model.autoEnabled ? KColor.accent : KColor.textMuted,
                  figure: model.autoEnabled ? L("Açık") : L("Kapalı"),
-                 figureColor: model.autoEnabled ? KColor.accentSoft : KColor.textMuted,
-                 line: model.autoEnabled ? model.autoScheduleText : L("Kartov önbellekleri kendisi temizlesin.")) {
+                 figureColor: model.autoEnabled ? KColor.text : KColor.textMuted,
+                 line: model.autoEnabled ? model.autoScheduleText : L("Kartov önbellekleri kendisi temizlesin")) {
             ZStack {
-                Circle().fill(KColor.accent.opacity(model.autoEnabled ? 0.22 : 0.07)).frame(width: 120, height: 120)
+                Circle().fill(KColor.surface2).frame(width: 120, height: 120)
                 Circle().strokeBorder(KGradient.rim, lineWidth: 1).frame(width: 120, height: 120)
                 Image(systemName: model.autoEnabled ? "checkmark.shield.fill" : "shield")
                     .font(.system(size: 46, weight: .semibold))
-                    .foregroundStyle(model.autoEnabled ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(KColor.textMuted))
+                    .foregroundStyle(model.autoEnabled ? KColor.accent : KColor.textMuted)
             }
         } action: {
             HStack(spacing: 8) {
@@ -294,18 +297,17 @@ struct CategoryTile: View {
     let action: () -> Void
 
     private var tint: Color {
-        guard let b = bytes, b > 0 else { return scanned ? KColor.success : KColor.accent }
+        guard let b = bytes, b > 0 else { return scanned ? KColor.success : KColor.textMuted }
         if group.isUserData || group == .privacy { return KColor.warning }
-        return b >= 1_000_000_000 ? KColor.heat : KColor.warning
+        return KColor.heat
     }
 
     var body: some View {
         Button(action: action) {
             HStack(alignment: .top, spacing: 12) {
-                ZStack {
-                    Circle().fill(tint.opacity(0.14)).frame(width: 38, height: 38)
-                    Image(systemName: group.symbol).font(.system(size: 15, weight: .semibold)).foregroundStyle(tint)
-                }
+                Image(systemName: group.symbol).font(.system(size: 15, weight: .medium)).foregroundStyle(KColor.textMuted)
+                    .frame(width: 38, height: 38)
+                    .background(Circle().fill(KColor.surface2))
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(alignment: .firstTextBaseline) {
                         Text(group.shortTitle).font(.system(size: 14, weight: .semibold)).foregroundStyle(KColor.text)
@@ -327,7 +329,7 @@ struct CategoryTile: View {
 
     @ViewBuilder private var sizeLabel: some View {
         if let b = bytes, b > 0 {
-            Text(KBytes.format(b)).font(.system(size: 14, weight: .bold).monospacedDigit()).foregroundStyle(tint)
+            Text(KBytes.format(b)).font(.system(size: 14, weight: .semibold).monospacedDigit()).foregroundStyle(tint)
         } else if let offLabel {
             Text(offLabel).font(.system(size: 11, weight: .semibold)).foregroundStyle(KColor.textMuted)
                 .padding(.horizontal, 7).padding(.vertical, 2)

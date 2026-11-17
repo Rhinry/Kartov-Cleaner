@@ -31,7 +31,7 @@ struct ScanView: View {
     private var start: some View {
         VStack(spacing: 18) {
             Globe(dirt: 0.2, speed: 0.25, size: 150).frame(width: 230, height: 230)
-            Text(L("Taramaya hazır")).font(.system(size: 26, weight: .bold))
+            Text(L("Taramaya hazır")).font(.system(size: 26, weight: .medium))
             Text(L("Tarama hiçbir şeyi silmez. Bitince neyin ne kadar yer kapladığını görür, neyin silineceğine sen karar verirsin."))
                 .font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                 .multilineTextAlignment(.center).frame(maxWidth: 440)
@@ -48,7 +48,7 @@ struct ScanView: View {
             Globe(dirt: dirtLevel(model.foundBytes), speed: isDone ? 0.25 : 1.2, size: 130)
                 .frame(width: 200, height: 200)
             VStack(spacing: 2) {
-                BytesText(bytes: model.foundBytes, size: 52, color: isDone ? KColor.heat : KColor.text)
+                BytesText(bytes: model.foundBytes, size: 52, color: KColor.text)
                 Text(isDone ? L("temizlenebilir alan bulundu") : L("bulundu · {0} dosyaya bakıldı", model.filesSeen.formatted()))
                     .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
             }
@@ -80,7 +80,7 @@ struct ScanView: View {
     }
 
     private var grid: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 8)], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 250), spacing: 8)], spacing: 8) {
             ForEach(categoryStates, id: \.group) { c in
                 HStack(spacing: 10) {
                     statusIcon(c.status).frame(width: 16)
@@ -121,7 +121,7 @@ struct ScanView: View {
 
     @ViewBuilder private func statusIcon(_ s: CatStatus) -> some View {
         switch s {
-        case .done: Image(systemName: "checkmark").font(.system(size: 11, weight: .bold)).foregroundStyle(KColor.success)
+        case .done: Image(systemName: "checkmark").font(.system(size: 11, weight: .semibold)).foregroundStyle(KColor.success)
         case .scanning: ProgressView().controlSize(.mini)
         case .queued: Circle().strokeBorder(KColor.textMuted.opacity(0.5), lineWidth: 1.2).frame(width: 8, height: 8)
         }

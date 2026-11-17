@@ -54,7 +54,7 @@ struct CleanOverlay: View {
 
             VStack(spacing: 6) {
                 if let ft, let record = model.lastRecord {
-                    Text(L("Dünya tertemiz")).font(.system(size: 26, weight: .bold))
+                    Text(L("Dünya tertemiz")).font(.system(size: 26, weight: .medium))
                         .opacity(clamp((ft - 0.3) / 0.4))
                     BytesText(bytes: Int64(Double(record.bytesDeleted + record.bytesInTrash) * easeOut(ft / 1.3)),
                               size: 48, color: KColor.success)
@@ -62,7 +62,7 @@ struct CleanOverlay: View {
                         .multilineTextAlignment(.center).frame(maxWidth: 420)
                         .fixedSize(horizontal: false, vertical: true)
                 } else {
-                    Text(L("Dünya temizleniyor…")).font(.system(size: 26, weight: .bold))
+                    Text(L("Dünya temizleniyor…")).font(.system(size: 26, weight: .medium))
                     Text(L("%{0} · önbellekler siliniyor", Int(max(model.cleaningProgress, working / 0.85) * 100)))
                         .font(.system(size: 14).monospacedDigit()).foregroundStyle(KColor.textMuted)
                 }
@@ -126,15 +126,14 @@ struct CleanOverlay: View {
         .accessibilityHidden(true)
     }
 
-    /// Green check badge at the globe's lower right, popping in with a small overshoot.
+    /// Green check badge at the globe's lower right, settling in without overshoot.
     private func badge(_ ft: Double) -> some View {
         let p = clamp((ft - 0.55) / 0.45)
         return ZStack {
             Circle().fill(KColor.success).frame(width: 56, height: 56)
-                .shadow(color: KColor.success.opacity(0.6), radius: 14)
-            Image(systemName: "checkmark").font(.system(size: 26, weight: .heavy)).foregroundStyle(KColor.bg)
+            Image(systemName: "checkmark").font(.system(size: 26, weight: .medium)).foregroundStyle(KColor.bg)
         }
-        .scaleEffect(p < 1 ? backOut(p) : 1)
+        .scaleEffect(p < 1 ? 0.85 + 0.15 * easeOut(p) : 1)
         .opacity(p > 0 ? 1 : 0)
         .offset(x: 95, y: 95)
         .accessibilityLabel(L("Temizlik tamamlandı"))

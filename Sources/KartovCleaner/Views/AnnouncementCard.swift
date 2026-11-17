@@ -14,7 +14,7 @@ struct AnnouncementOverlay: View {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack(spacing: 12) {
                         Image(systemName: "megaphone.fill").font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(Color.white)
+                            .foregroundStyle(KColor.onAccent)
                             .frame(width: 46, height: 46)
                             .background(Circle().fill(KGradient.accent))
                         VStack(alignment: .leading, spacing: 2) {
@@ -29,7 +29,7 @@ struct AnnouncementOverlay: View {
                                 .foregroundStyle(KColor.textMuted)
                         }
                     }
-                    Text(a.title).font(.system(size: 19, weight: .bold))
+                    Text(a.title).font(.system(size: 19, weight: .semibold))
                         .fixedSize(horizontal: false, vertical: true)
                     if !a.body.isEmpty {
                         Text(notesText(a.body)).font(.system(size: 13)).foregroundStyle(KColor.text.opacity(0.9))

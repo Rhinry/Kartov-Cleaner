@@ -54,7 +54,7 @@ struct AppMapSheet: View {
             }
             .frame(width: 44, height: 44)
             VStack(alignment: .leading, spacing: 2) {
-                Text(target.name).font(.system(size: 20, weight: .bold))
+                Text(target.name).font(.system(size: 20, weight: .medium))
                 Text(map.loading ? L("Dosyaları aranıyor…")
                      : L("Library'de {0} · {1} yerde", KBytes.format(map.total), map.nodes.reduce(0) { $0 + $1.urls.count }))
                     .font(.system(size: 12)).foregroundStyle(KColor.textMuted)

@@ -55,7 +55,7 @@ struct ProjectsView: View {
                 Circle().fill(KColor.accent.opacity(0.12)).frame(width: 120, height: 120)
                 Image(systemName: "film.stack.fill").font(.system(size: 46)).foregroundStyle(KColor.accent)
             }
-            Text(L("Biten projeler ne kadar yer tutuyor?")).font(.system(size: 26, weight: .bold))
+            Text(L("Biten projeler ne kadar yer tutuyor?")).font(.system(size: 26, weight: .medium))
             Text(L("After Effects ve Premiere Pro projelerinin yanında biriken önizleme renderlarını, medya önbelleklerini, otomatik kayıtları ve proxy'leri proje proje gösterir. Uzun süredir dokunmadığın projeleri öne çıkarır. Tarama hiçbir şeyi silmez."))
                 .font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                 .multilineTextAlignment(.center).frame(maxWidth: 520)
@@ -134,7 +134,7 @@ struct ProjectsView: View {
                 .background(Circle().fill(KColor.accent.opacity(0.14)))
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(KBytes.format(caches.totalBytes)).font(.system(size: 26, weight: .bold).monospacedDigit())
+                    Text(KBytes.format(caches.totalBytes)).font(.system(size: 26, weight: .medium).monospacedDigit())
                     Text(L("{0} projede önbellek ve yedek", caches.projects.count))
                         .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                 }
@@ -161,7 +161,7 @@ struct ProjectsView: View {
                     Image(systemName: "folder").font(.system(size: 11))
                     Text(abbreviate(path)).font(.system(size: 12)).lineLimit(1).truncationMode(.middle)
                     Button { caches.removeRoot(path) } label: {
-                        Image(systemName: "xmark").font(.system(size: 9, weight: .bold)).frame(width: 16, height: 16).contentShape(Rectangle())
+                        Image(systemName: "xmark").font(.system(size: 9, weight: .semibold)).frame(width: 16, height: 16).contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .help(L("Listeden çıkar"))
@@ -280,7 +280,7 @@ struct ProjectRow: View {
                         Spacer(minLength: 12)
                         Text(KBytes.format(project.bytes)).font(.system(size: 13, weight: .semibold).monospacedDigit())
                             .frame(minWidth: 70, alignment: .trailing)
-                        Image(systemName: "chevron.right").font(.system(size: 10, weight: .bold)).foregroundStyle(KColor.textMuted)
+                        Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)).foregroundStyle(KColor.textMuted)
                             .rotationEffect(.degrees(open ? 90 : 0))
                     }
                     .frame(height: 44).contentShape(Rectangle())
@@ -378,7 +378,7 @@ struct ProjectAppIcon: View {
             Image(nsImage: image).resizable().interpolation(.high)
         } else {
             RoundedRectangle(cornerRadius: 6).fill(KColor.accent.opacity(0.18))
-                .overlay(Text(app == .afterEffects ? "Ae" : "Pr").font(.system(size: 11, weight: .bold))
+                .overlay(Text(app == .afterEffects ? "Ae" : "Pr").font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(KColor.accentSoft))
                 .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(KColor.accent.opacity(0.4)))
                 .padding(1)

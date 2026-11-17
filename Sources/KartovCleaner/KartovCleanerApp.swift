@@ -63,7 +63,7 @@ struct RootView: View {
     private var main: some View {
         VStack(spacing: 0) {
             TopBar()
-            if !model.showTutorial { PermissionBanner(); UpdateBanner() }
+            if !model.showTutorial { PermissionBanner(); NotificationBanner(); UpdateBanner() }
             if let message = model.errorMessage {
                 Text(message).foregroundStyle(KColor.danger).padding()
             }
@@ -183,7 +183,7 @@ struct TopBar: View {
                 }
             }
             .padding(4)
-            .background(Capsule().fill(KColor.surface.opacity(0.7)))
+            .background(Capsule().fill(KColor.surface))
             .overlay(Capsule().strokeBorder(KGradient.rim))
             .fixedSize()
         }
@@ -220,21 +220,20 @@ struct TabPill: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: tab.symbol).font(.system(size: 12, weight: .semibold))
-                Text(tab.title).font(.system(size: 12, weight: selected ? .semibold : .medium))
+            HStack(spacing: 8) {
+                Image(systemName: tab.symbol).font(.system(size: 14, weight: .medium))
+                Text(tab.title).font(.system(size: 14, weight: selected ? .semibold : .medium))
                 if let badge {
-                    Text(badge).font(.system(size: 10, weight: .bold).monospacedDigit())
-                        .padding(.horizontal, 6).padding(.vertical, 1)
-                        .background(Capsule().fill(selected ? Color.white.opacity(0.22) : KColor.heat.opacity(0.18)))
-                        .foregroundStyle(selected ? Color.white : KColor.heatSoft)
+                    Text(badge).font(.system(size: 11, weight: .semibold).monospacedDigit())
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .background(Capsule().fill(selected ? KColor.onAccent.opacity(0.14) : KColor.heat.opacity(0.18)))
+                        .foregroundStyle(selected ? KColor.onAccent : KColor.heatSoft)
                 }
             }
-            .foregroundStyle(selected ? Color.white : KColor.textMuted)
-            .padding(.horizontal, 12).frame(height: 30)
+            .foregroundStyle(selected ? KColor.onAccent : KColor.textMuted)
+            .padding(.horizontal, 16).frame(height: 36)
             .background(Capsule().fill(selected ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(Color.clear)))
             .overlay(Capsule().strokeBorder(KGradient.accent, lineWidth: highlighted && !selected ? 2 : 0))
-            .shadow(color: KColor.accent.opacity(selected || highlighted ? 0.45 : 0), radius: 8, y: 2)
             .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -260,7 +259,7 @@ struct MenuBarPanel: View {
                 VStack(alignment: .leading, spacing: 2) {
                     KartovBrand()
                     Text(model.items.isEmpty ? L("Hazır") : (bytes > 0 ? KBytes.format(bytes) : L("Tertemiz")))
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(bytes >= 5_000_000_000 ? KColor.heat : KColor.text)
                     Text(model.autoMessage ?? (model.items.isEmpty ? L("Tek tıkla temizle ya da optimize et.") : L("temizlenebilir")))
                         .font(.system(size: 11)).foregroundStyle(KColor.textMuted).lineLimit(2)
@@ -318,7 +317,7 @@ struct KartovBrand: View {
     var body: some View {
         HStack(spacing: 7) {
             KartovLogo(size: 20)
-            Text("Kartov").font(.system(size: 13, weight: .bold)).foregroundColor(KColor.text)
+            Text("Kartov").font(.system(size: 13, weight: .semibold)).foregroundColor(KColor.text)
             + Text(" Cleaner").font(.system(size: 13, weight: .medium)).foregroundColor(KColor.textMuted)
         }
         .fixedSize()

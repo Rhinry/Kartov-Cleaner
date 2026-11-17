@@ -36,7 +36,7 @@ struct UpdateSheet: View {
                 HStack(spacing: 14) {
                     KartovLogo(size: 52)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(title).font(.system(size: 20, weight: .bold))
+                        Text(title).font(.system(size: 20, weight: .medium))
                         Text(L("Şu an {0} kullanıyorsun.", updater.currentVersion))
                             .font(.system(size: 12)).foregroundStyle(KColor.textMuted)
                     }
@@ -133,6 +133,7 @@ struct UpdateSheet: View {
 struct UpdateSettingsCard: View {
     @ObservedObject var updater = Updater.shared
     @ObservedObject var announcements = AnnouncementCenter.shared
+    @ObservedObject var permission = NotificationPermission.shared
     var body: some View {
         SettingsCard(title: L("Güncellemeler"), symbol: "arrow.down.circle") {
             SettingsRow(L("Yüklü sürüm"), note: updater.repo.map { L("Kaynak: github.com/{0}", $0) }
@@ -153,6 +154,11 @@ struct UpdateSettingsCard: View {
                 Toggle("", isOn: Binding(get: { announcements.enabled }, set: { announcements.enabled = $0 })).labelsHidden()
             }
             .disabled(updater.repo == nil)
+            if permission.denied {
+                SettingsRow(L("macOS bildirimleri kapalı"), note: L("Duyurular ve uyarılar yalnızca Kartov'un içinde görünür.")) {
+                    Button(L("Aç")) { permission.openSettings() }.buttonStyle(PrimaryButtonStyle())
+                }
+            }
             SettingsRow(L("Son yenilikler"), note: L("Her sürümde neyin değiştiği")) {
                 Button(L("Göster")) { updater.openWhatsNew() }.buttonStyle(SecondaryButtonStyle())
             }
@@ -202,7 +208,7 @@ struct UpdateTopButton: View {
                     .lineLimit(1)
             }
             .padding(.horizontal, 10).frame(height: 26)
-            .foregroundStyle(updater.release != nil ? Color.white : (isUpToDate ? KColor.success : KColor.textMuted))
+            .foregroundStyle(updater.release != nil ? KColor.onAccent : (isUpToDate ? KColor.success : KColor.textMuted))
             .background(
                 Capsule().fill(updater.release != nil ? AnyShapeStyle(KGradient.accent) : AnyShapeStyle(KColor.surface.opacity(0.7)))
             )
@@ -266,7 +272,7 @@ struct WhatsNewSheet: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(updater.justUpdatedFrom != nil ? L("Kartov Cleaner {0} sürümüne güncellendi", updater.currentVersion)
                                                             : L("Son yenilikler"))
-                            .font(.system(size: 20, weight: .bold))
+                            .font(.system(size: 20, weight: .medium))
                         Text(updater.justUpdatedFrom.map { L("{0} sürümünden geldin. Değişenler:", $0) }
                              ?? L("Her sürümde neyin değiştiği"))
                             .font(.system(size: 12)).foregroundStyle(KColor.textMuted)
@@ -315,14 +321,14 @@ struct WhatsNewSheet: View {
         let isNewer = Updater.isNewer(e.version, than: updater.currentVersion)
         return VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Text("v\(e.version)").font(.system(size: 15, weight: .bold).monospacedDigit())
+                Text("v\(e.version)").font(.system(size: 15, weight: .semibold).monospacedDigit())
                 if isCurrent {
-                    Text(L("Yüklü")).font(.system(size: 10, weight: .bold))
+                    Text(L("Yüklü")).font(.system(size: 10, weight: .semibold))
                         .padding(.horizontal, 7).padding(.vertical, 2)
                         .background(Capsule().fill(KColor.success.opacity(0.18)))
                         .foregroundStyle(KColor.success)
                 } else if isNewer {
-                    Text(L("Yeni")).font(.system(size: 10, weight: .bold))
+                    Text(L("Yeni")).font(.system(size: 10, weight: .semibold))
                         .padding(.horizontal, 7).padding(.vertical, 2)
                         .background(Capsule().fill(KColor.accent.opacity(0.18)))
                         .foregroundStyle(KColor.accent)

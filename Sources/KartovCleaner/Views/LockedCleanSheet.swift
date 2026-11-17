@@ -23,7 +23,7 @@ struct LockedCleanSheet: View {
                         .frame(width: 48, height: 48)
                         .background(RoundedRectangle(cornerRadius: 12).fill(KColor.warning.opacity(0.14)))
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(L("{0} program açık", apps.count)).font(.system(size: 20, weight: .bold))
+                        Text(L("{0} program açık", apps.count)).font(.system(size: 20, weight: .medium))
                         Text(L("Açıkken önbelleklerini kullandıkları için {0} temizlenemiyor.", KBytes.format(held)))
                             .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                             .fixedSize(horizontal: false, vertical: true)
@@ -106,7 +106,7 @@ struct LockedCleanSheet: View {
         var body: some View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(label).font(.system(size: 11)).foregroundStyle(KColor.textMuted)
-                Text(value).font(.system(size: 20, weight: .bold).monospacedDigit()).foregroundStyle(tint)
+                Text(value).font(.system(size: 20, weight: .medium).monospacedDigit()).foregroundStyle(tint)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)

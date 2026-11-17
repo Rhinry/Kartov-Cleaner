@@ -38,8 +38,8 @@ enum KFont {
     static let sm      = Font.system(size: 13)
     static let base    = Font.system(size: 14)
     static let lg      = Font.system(size: 17, weight: .semibold)
-    static let xl      = Font.system(size: 24, weight: .bold)
-    static let display = Font.system(size: 44, weight: .bold).monospacedDigit()
+    static let xl      = Font.system(size: 24, weight: .medium)
+    static let display = Font.system(size: 44, weight: .medium).monospacedDigit()
     /// Every byte value (GB/MB) uses tabular digits so columns don't jitter.
     static func number(_ size: CGFloat = 14, _ weight: Font.Weight = .semibold) -> Font {
         .system(size: size, weight: weight).monospacedDigit()
@@ -54,7 +54,7 @@ enum KSpace {
 enum KRadius { static let sm: CGFloat = 6, md: CGFloat = 10, lg: CGFloat = 14 }
 
 enum KLayout {
-    static let windowMin = CGSize(width: 1160, height: 660)
+    static let windowMin = CGSize(width: 1240, height: 660)
     static let windowDefault = CGSize(width: 1120, height: 720)
     static let sidebar: CGFloat = 220, toolbar: CGFloat = 52, contentMax: CGFloat = 880
     static let row: CGFloat = 44, rowCompact: CGFloat = 36
@@ -94,16 +94,15 @@ extension KColor {
 
 enum KGradient {
     /// Primary actions: blue to cyan.
-    static let accent = LinearGradient(colors: [dyn(0x4C8DFF, 0x1F5FD6), dyn(0x3CC8F2, 0x1590C0)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let heat = LinearGradient(colors: [dyn(0xFF5A5F, 0xC42B33), dyn(0xFF8A5B, 0xB8402A)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let success = LinearGradient(colors: [dyn(0x3DD68C, 0x1B7A4B), dyn(0x34C3D9, 0x157A8C)],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let violet = LinearGradient(colors: [dyn(0x9B7BFF, 0x5B3FD0), dyn(0x4C8DFF, 0x1F5FD6)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let warning = LinearGradient(colors: [dyn(0xF2D16B, 0x7D6200), dyn(0xFF9F5B, 0x9C4A12)],
-                                        startPoint: .topLeading, endPoint: .bottomTrailing)
+    /// Solid fills, kept as gradient types for existing call sites. No hue-to-hue gradients:
+    /// blue means "an action", red means "space you can get back".
+    static let accent = LinearGradient(colors: [KColor.accent, KColor.accent], startPoint: .top, endPoint: .bottom)
+    static let heat = LinearGradient(colors: [KColor.heat, KColor.heat], startPoint: .top, endPoint: .bottom)
+    static let success = LinearGradient(colors: [KColor.success, KColor.success], startPoint: .top, endPoint: .bottom)
+    static let violet = LinearGradient(colors: [KColor.accent, KColor.accent], startPoint: .top, endPoint: .bottom)
+    static let warning = LinearGradient(colors: [KColor.warning, KColor.warning], startPoint: .top, endPoint: .bottom)
+    /// Quiet fill for icon tiles and normal gauges.
+    static let quiet = LinearGradient(colors: [KColor.textMuted, KColor.textMuted], startPoint: .top, endPoint: .bottom)
     /// Card fill: a touch lighter at the top.
     /// Card fill: flat (one color), kept as a gradient type for existing call sites.
     static let card = LinearGradient(colors: [KColor.surface, KColor.surface], startPoint: .top, endPoint: .bottom)
@@ -111,17 +110,10 @@ enum KGradient {
     static let rim = LinearGradient(colors: [KColor.border, KColor.border], startPoint: .top, endPoint: .bottom)
 }
 
-/// Window background: the dark ground with two soft glows.
+/// Window background: one flat dark ground. Color lives in the globe and the figures, not behind them.
 struct AppBackground: View {
     var body: some View {
-        ZStack {
-            KColor.bg
-            RadialGradient(colors: [dyn(0x1C3A73, 0xDCE8FF).opacity(0.55), .clear],
-                           center: .topLeading, startRadius: 0, endRadius: 620)
-            RadialGradient(colors: [dyn(0x3A1F5C, 0xEDE3FF).opacity(0.35), .clear],
-                           center: .bottomTrailing, startRadius: 0, endRadius: 560)
-        }
-        .ignoresSafeArea()
+        KColor.bg.ignoresSafeArea()
     }
 }
 

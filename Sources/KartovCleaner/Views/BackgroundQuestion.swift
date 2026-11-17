@@ -12,7 +12,7 @@ struct BackgroundQuestion: View {
                 HStack(spacing: 14) {
                     KartovLogo(size: 48)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(L("Kartov Cleaner arka planda çalışsın mı?")).font(.system(size: 20, weight: .bold))
+                        Text(L("Kartov Cleaner arka planda çalışsın mı?")).font(.system(size: 20, weight: .medium))
                         Text(L("Pencereyi kapatınca da açık kalır, Mac açılınca kendiliğinden başlar."))
                             .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                     }

@@ -10,7 +10,7 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                Text(L("Ayarlar")).font(.system(size: 26, weight: .bold))
+                Text(L("Ayarlar")).font(.system(size: 26, weight: .medium))
                 HStack(alignment: .top, spacing: 16) {
                     VStack(spacing: 16) {
                         UpdateSettingsCard()

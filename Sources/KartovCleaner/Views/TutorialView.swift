@@ -85,13 +85,13 @@ struct TutorialView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("\(i + 1) / \(Tour.steps.count) · \(step.section.title)")
                         .font(.system(size: 11, weight: .semibold)).foregroundStyle(KColor.textMuted)
-                    Text(step.title).font(.system(size: 20, weight: .bold))
+                    Text(step.title).font(.system(size: 20, weight: .medium))
                     Text(step.text).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                         .lineSpacing(2).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Button { model.finishTutorial() } label: {
-                    Image(systemName: "xmark").font(.system(size: 11, weight: .bold)).foregroundStyle(KColor.textMuted)
+                    Image(systemName: "xmark").font(.system(size: 11, weight: .semibold)).foregroundStyle(KColor.textMuted)
                         .frame(width: 24, height: 24).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

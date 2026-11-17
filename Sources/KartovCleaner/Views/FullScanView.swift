@@ -56,7 +56,7 @@ struct FullScanView: View {
                 Circle().fill(KColor.accent.opacity(0.12)).frame(width: 120, height: 120)
                 Image(systemName: "chart.pie.fill").font(.system(size: 50)).foregroundStyle(KColor.accent)
             }
-            Text(L("Mac'inde ne nerede?")).font(.system(size: 26, weight: .bold))
+            Text(L("Mac'inde ne nerede?")).font(.system(size: 26, weight: .medium))
             Text(L("Programlarını, videolarını, görsellerini, müziklerini ve belgelerini boyutlarıyla listeler. İstediğin gibi sıralar, istemediklerini buradan kaldırırsın. Tarama hiçbir şeyi silmez."))
                 .font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                 .multilineTextAlignment(.center).frame(maxWidth: 460)
@@ -215,7 +215,7 @@ struct StorageMap: View {
         let total = max(kinds.reduce(Int64(0)) { $0 + $1.bytes }, 1)
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline) {
-                Text(KBytes.format(total)).font(.system(size: 26, weight: .bold).monospacedDigit())
+                Text(KBytes.format(total)).font(.system(size: 26, weight: .medium).monospacedDigit())
                 Text(L("programların ve dosyaların kapladığı alan")).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                 Spacer()
                 if let d = model.fullScanDate {
@@ -300,7 +300,7 @@ extension DiskKind {
     var color: Color {
         switch self {
         case .app: return KColor.accent
-        case .video: return KColor.heat
+        case .video: return Color(.sRGB, red: 0.36, green: 0.78, blue: 0.85)
         case .image: return Color(.sRGB, red: 0.71, green: 0.55, blue: 1.0)
         case .audio: return KColor.success
         case .document: return KColor.warning

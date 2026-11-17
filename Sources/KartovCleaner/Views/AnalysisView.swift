@@ -33,7 +33,7 @@ struct AnalysisView: View {
     private var header: some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(L("Analiz")).font(.system(size: 26, weight: .bold))
+                Text(L("Analiz")).font(.system(size: 26, weight: .medium))
                 Text(L("Programların ne kadar bellek, işlemci ve disk kullandığını, hangilerini çok kullandığını gör; istediğine buradan müdahale et."))
                     .font(.system(size: 13)).foregroundStyle(KColor.textMuted)
             }
@@ -49,10 +49,10 @@ struct AnalysisView: View {
         let cpu = model.runningApps.reduce(0.0) { $0 + $1.cpu }
         let installedBytes = model.installedApps.reduce(Int64(0)) { $0 + ($1.size ?? 0) }
         return HStack(spacing: 12) {
-            StatTile(symbol: "app.badge", tint: KColor.accent, value: "\(model.runningApps.count)", label: L("açık program"))
-            StatTile(symbol: "memorychip", tint: Color.purple, value: KBytes.format(Int64(mem)), label: L("programların belleği"))
-            StatTile(symbol: "cpu", tint: KColor.success, value: "%\(Int(cpu * 100))", label: L("işlemci (tek çekirdek = %100)"))
-            StatTile(symbol: "internaldrive", tint: KColor.warning,
+            StatTile(symbol: "app.badge", tint: KColor.textMuted, value: "\(model.runningApps.count)", label: L("açık program"))
+            StatTile(symbol: "memorychip", tint: KColor.textMuted, value: KBytes.format(Int64(mem)), label: L("programların belleği"))
+            StatTile(symbol: "cpu", tint: KColor.textMuted, value: "%\(Int(cpu * 100))", label: L("işlemci (tek çekirdek = %100)"))
+            StatTile(symbol: "internaldrive", tint: KColor.textMuted,
                      value: model.installedApps.isEmpty ? "…" : KBytes.format(installedBytes),
                      label: L("{0} yüklü program", model.installedApps.count))
         }
@@ -91,7 +91,7 @@ struct AnalysisView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     HStack(spacing: 8) {
-                        Bar(fraction: Double(a.memory) / maxMem, tint: Color.purple).frame(width: 80)
+                        Bar(fraction: Double(a.memory) / maxMem, tint: KColor.textMuted.opacity(0.7)).frame(width: 80)
                         Text(KBytes.format(Int64(a.memory))).font(.system(size: 12).monospacedDigit())
                     }
                     .frame(width: 170, alignment: .leading)
@@ -185,7 +185,7 @@ struct StatTile: View {
                 .frame(width: 38, height: 38)
                 .background(RoundedRectangle(cornerRadius: 10).fill(tint.opacity(0.14)))
             VStack(alignment: .leading, spacing: 1) {
-                Text(value).font(.system(size: 20, weight: .bold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+                Text(value).font(.system(size: 20, weight: .medium).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
                 Text(label).font(.system(size: 11)).foregroundStyle(KColor.textMuted).lineLimit(1)
             }
             Spacer(minLength: 0)

@@ -247,7 +247,7 @@ private struct GlobePainter {
                     center: c, startRadius: 0, endRadius: outer))
     }
 
-    /// Disk use as a thin ring: blue when there is room, yellow when tight, red when nearly full.
+    /// Disk use as a thin ring: quiet silver while there is room, red when nearly full.
     private func drawRing(_ ctx: inout GraphicsContext, c: CGPoint, R: CGFloat, fraction: Double) {
         let r = R * 1.30
         let w = max(2, R * 0.035)
@@ -255,7 +255,7 @@ private struct GlobePainter {
         ctx.stroke(Path(ellipseIn: rect), with: .color(.white.opacity(0.08)), lineWidth: w)
         var arc = Path()
         arc.addArc(center: c, radius: r, startAngle: .degrees(-90), endAngle: .degrees(-90 + 360 * fraction), clockwise: false)
-        let color: RGB = fraction >= 0.9 ? RGB(0xFF5A5F) : (fraction >= 0.8 ? RGB(0xF2D16B) : RGB(0x6FB8FF))
+        let color: RGB = fraction >= 0.9 ? RGB(0xFF5A5F) : RGB(0xB8C1D1)
         ctx.stroke(arc, with: .color(color.color(0.9)), style: StrokeStyle(lineWidth: w, lineCap: .round))
     }
 

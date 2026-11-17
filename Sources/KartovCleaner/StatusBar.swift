@@ -267,7 +267,7 @@ struct QuickFeedback: View {
                 .frame(width: 46, height: 46)
             VStack(alignment: .leading, spacing: 5) {
                 Text(model.quickBusy ? L("Kartov çalışıyor") : L("Bitti"))
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(model.quickBusy ? KColor.text : KColor.success)
                 if let s = model.quickStatus {
                     HStack(spacing: 6) {

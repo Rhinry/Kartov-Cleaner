@@ -379,6 +379,11 @@ final class AppModel: ObservableObject {
         scheduleAutoCheck()
         StatusBar.shared.install(model: self)
         Updater.shared.start()
+        // Existing users who never got the question: ask a few seconds after launch (never during the tour).
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4) { [weak self] in
+            guard let self, !self.showTutorial else { return }
+            NotificationPermission.shared.requestIfNeeded()
+        }
         AnnouncementCenter.shared.start()
         Guardian.shared.start()
         // A new work profile changes what is kept: redraw everything that depends on it.
@@ -413,6 +418,8 @@ final class AppModel: ObservableObject {
         tutorialStep = 0
         section = .dashboard
         defaults.set(true, forKey: "tutorialDone.v5")
+        // Right after the tour: macOS asks once whether Kartov may show notifications.
+        NotificationPermission.shared.requestIfNeeded()
     }
 
     func openTutorial() {

@@ -15,7 +15,7 @@ struct AccessGate: View {
                     .padding(6).background(Circle().fill(KColor.bg))
             }
             VStack(spacing: 8) {
-                Text(L("Kartov Cleaner'a Tam Disk Erişimi ver")).font(.system(size: 26, weight: .bold))
+                Text(L("Kartov Cleaner'a Tam Disk Erişimi ver")).font(.system(size: 26, weight: .medium))
                 Text(L("Mac'indeki önbellekleri eksiksiz bulabilmesi için Kartov'un bu izne ihtiyacı var. Kartov dosyalarını yalnızca okur; sen onaylamadan hiçbir şey silmez."))
                     .font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                     .multilineTextAlignment(.center).frame(maxWidth: 500)
@@ -57,7 +57,7 @@ struct AccessGate: View {
     private func step(_ n: Int, _ title: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Text("\(n)")
-                .font(.system(size: 13, weight: .bold))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(KColor.accent)
                 .frame(width: 28, height: 28)
                 .background(Circle().fill(KColor.accent.opacity(0.14)))

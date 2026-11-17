@@ -70,7 +70,7 @@ struct ResultsView: View {
                 } else {
                     Text(L("Seçtiklerin temizlenince kazanacağın alan")).font(.system(size: 14)).foregroundStyle(KColor.textMuted)
                     BytesText(bytes: model.selectedBytes, size: 56,
-                              color: model.selectedBytes > 0 ? KColor.heat : KColor.textMuted)
+                              color: model.selectedBytes > 0 ? KColor.text : KColor.textMuted)
                     Text(selectionDetail).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -269,7 +269,7 @@ struct GroupRows: View {
                             else { model.expanded.insert(group.id) }
                         } label: {
                             Image(systemName: "chevron.down")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(.system(size: 9, weight: .semibold))
                                 .rotationEffect(.degrees(isOpen ? 0 : -90))
                                 .foregroundStyle(KColor.textMuted)
                                 .frame(width: 18, height: 18).contentShape(Rectangle())

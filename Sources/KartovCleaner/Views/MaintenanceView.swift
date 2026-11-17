@@ -35,7 +35,7 @@ struct MaintenanceView: View {
                 .frame(width: 80, height: 80)
                 .saturation(model.autoEnabled ? 1 : 0)
             VStack(alignment: .leading, spacing: 4) {
-                Text(L("Otomatik bakım")).font(.system(size: 20, weight: .bold))
+                Text(L("Otomatik bakım")).font(.system(size: 20, weight: .medium))
                 Text(subtitle).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
                 if let m = model.autoMessage {
                     Text(m).font(.system(size: 12, weight: .medium)).foregroundStyle(KColor.success)

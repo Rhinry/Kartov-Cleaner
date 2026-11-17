@@ -1,12 +1,14 @@
 import SwiftUI
 import KartovCore
 
-func homeGreeting(_ date: Date = Date()) -> String {
-    switch Calendar.current.component(.hour, from: date) {
-    case 5..<12: return L("Günaydın")
-    case 12..<18: return L("İyi günler")
-    default: return L("İyi akşamlar")
-    }
+/// "17 Kasım Salı": the title of the home screen.
+func homeDate(_ date: Date = Date()) -> String {
+    date.formatted(.dateTime.day().month(.wide).weekday(.wide).locale(I18n.locale))
+}
+
+/// The red dot means one thing everywhere: space you can get back.
+struct ReclaimDot: View {
+    var body: some View { Circle().fill(KColor.heat).frame(width: 7, height: 7).accessibilityHidden(true) }
 }
 
 /// The home screen: only the globe. Its dirt shows how much has piled up; one number, one button.
@@ -23,12 +25,8 @@ struct HomeView: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer(minLength: 10)
-            Text(homeGreeting()).font(.system(size: 15, weight: .medium)).foregroundStyle(KColor.textMuted)
+            Text(homeDate()).font(.system(size: 15)).foregroundStyle(KColor.textMuted)
             ZStack {
-                Circle()
-                    .fill(RadialGradient(colors: [glowColor.opacity(0.22), .clear],
-                                         center: .center, startRadius: 40, endRadius: 260))
-                    .frame(width: 520, height: 520)
                 // Living Globe: dirt is junk, warmth is processor load, cloud is memory, the ring is the disk.
                 Globe(dirt: dirtLevel(bytes), speed: scanning ? 1.1 : 0.2 + guardian.heat * 0.9, size: 210,
                       shine: !never && bytes == 0 && guardian.stressNote == nil ? 0.5 : 0,
@@ -39,11 +37,15 @@ struct HomeView: View {
             .accessibilityLabel(mood)
 
             Text(figure)
-                .font(.system(size: 54, weight: .bold).monospacedDigit())
+                .font(.system(size: 54, weight: .medium).monospacedDigit())
                 .foregroundStyle(figureColor)
-            Text(mood).font(.system(size: 15)).foregroundStyle(KColor.textMuted)
-                .multilineTextAlignment(.center).frame(maxWidth: 460)
-                .padding(.top, 4)
+            HStack(spacing: 8) {
+                if !never && !scanning && bytes > 0 { ReclaimDot() }
+                Text(mood).font(.system(size: 15)).foregroundStyle(KColor.textMuted)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: 460)
+            .padding(.top, 4)
             if !scanning, let note = guardian.stressNote {
                 Label(note, systemImage: "waveform.path.ecg")
                     .font(.system(size: 13, weight: .medium)).foregroundStyle(KColor.warning)
@@ -70,17 +72,7 @@ struct HomeView: View {
         return bytes > 0 ? KBytes.format(bytes) : L("Tertemiz")
     }
 
-    private var glowColor: Color {
-        if dirty { return KColor.heat }
-        if guardian.heat > 0.4 { return Color.orange }
-        return KColor.accent
-    }
-
-    private var figureColor: Color {
-        if never { return KColor.text }
-        if dirty { return KColor.heat }
-        return bytes > 0 ? KColor.warning : KColor.success
-    }
+    private var figureColor: Color { KColor.text }
 
     private var mood: String {
         if scanning { return L("bulundu · Mac'ine bakılıyor…") }
@@ -149,7 +141,7 @@ struct VitalChip: View {
     let alarm: Double
     var body: some View {
         HStack(spacing: 5) {
-            Circle().fill(value >= alarm ? KColor.heat : (value >= warn ? KColor.warning : KColor.success))
+            Circle().fill(value >= alarm ? KColor.heat : (value >= warn ? KColor.warning : KColor.textMuted.opacity(0.6)))
                 .frame(width: 6, height: 6)
             Text(label).foregroundStyle(KColor.textMuted)
             Text("%\(Int(value * 100))").monospacedDigit().foregroundStyle(KColor.text)

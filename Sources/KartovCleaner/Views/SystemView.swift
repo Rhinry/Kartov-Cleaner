@@ -40,9 +40,9 @@ struct SystemView: View {
                      L("İşlemci tam yükte çalışıyor.")), KColor.heat, 0.7)
         }
         if mem > 0.75 || diskFull > 0.8 || model.cpu > 0.7 {
-            return (L("Biraz yorgun"), L("Birkaç küçük dokunuş iyi gelir."), KColor.warning, 0.35)
+            return (L("Biraz yorgun"), L("Birkaç küçük dokunuş iyi gelir"), KColor.warning, 0.35)
         }
-        return (L("Her şey yolunda"), L("Mac'in rahat çalışıyor."), KColor.success, 0)
+        return (L("Her şey yolunda"), L("Mac'in rahat çalışıyor"), KColor.success, 0)
     }
 
     private var summary: some View {
@@ -51,7 +51,7 @@ struct SystemView: View {
             Globe(dirt: h.3, speed: 0.3, size: 56)
                 .frame(width: 84, height: 84)
             VStack(alignment: .leading, spacing: 4) {
-                Text(h.0).font(.system(size: 24, weight: .bold))
+                Text(h.0).font(.system(size: 24, weight: .medium))
                 Text(h.1).font(.system(size: 13)).foregroundStyle(KColor.textMuted)
             }
             Spacer()
@@ -77,17 +77,17 @@ struct SystemView: View {
         let diskFrac = disk.total > 0 ? Double(disk.used) / Double(disk.total) : 0
         return LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16)], spacing: 16) {
             GaugeCard(title: L("İşlemci"), value: model.cpu, big: "%\(Int(model.cpu * 100))",
-                      detail: L("şu an kullanılıyor"), gradient: KGradient.accent, history: model.cpuHistory)
+                      detail: L("şu an kullanılıyor"), gradient: model.cpu > 0.9 ? KGradient.heat : KGradient.quiet, history: model.cpuHistory)
             GaugeCard(title: L("Bellek"), value: model.memory?.pressure ?? 0,
                       big: model.memory.map { KBytes.format(Int64($0.used)) } ?? "—",
                       detail: model.memory.map { L("{0} belleğin", KBytes.format(Int64($0.total))) } ?? "",
-                      gradient: KGradient.violet, history: nil)
+                      gradient: (model.memory?.pressure ?? 0) > 0.85 ? KGradient.heat : KGradient.quiet, history: nil)
             GaugeCard(title: L("Disk"), value: diskFrac, big: KBytes.format(disk.free),
-                      detail: L("boş · toplam {0}", KBytes.format(disk.total)), gradient: diskFrac > 0.85 ? KGradient.heat : KGradient.success,
+                      detail: L("boş · toplam {0}", KBytes.format(disk.total)), gradient: diskFrac > 0.85 ? KGradient.heat : KGradient.quiet,
                       history: nil)
             if let b = model.battery {
                 GaugeCard(title: L("Pil"), value: Double(b.percent) / 100, big: "%\(b.percent)",
-                          detail: batteryDetail(b), gradient: b.percent < 20 ? KGradient.heat : KGradient.success, history: nil)
+                          detail: batteryDetail(b), gradient: b.percent < 20 ? KGradient.heat : KGradient.quiet, history: nil)
             }
         }
     }
@@ -171,7 +171,7 @@ struct SystemView: View {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 300), spacing: 8)], spacing: 8) {
                 ForEach(model.startupItems) { item in
                     HStack(spacing: 10) {
-                        Image(systemName: "bolt.horizontal.circle").foregroundStyle(KColor.warning)
+                        Image(systemName: "bolt.horizontal.circle").foregroundStyle(KColor.textMuted)
                         VStack(alignment: .leading, spacing: 1) {
                             Text(item.name).font(.system(size: 12, weight: .medium)).lineLimit(1)
                             Text(item.systemWide ? L("Tüm kullanıcılar için · yönetici gerekir") : L("Yalnızca senin hesabın"))
@@ -211,12 +211,12 @@ struct GaugeCard<G: ShapeStyle>: View {
                     .stroke(gradient, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(KMotion.base, value: value)
-                Text("%\(Int(min(1, value) * 100))").font(.system(size: 13, weight: .bold).monospacedDigit())
+                Text("%\(Int(min(1, value) * 100))").font(.system(size: 13, weight: .semibold).monospacedDigit())
             }
             .frame(width: 74, height: 74)
             VStack(alignment: .leading, spacing: 3) {
                 Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(KColor.textMuted)
-                Text(big).font(.system(size: 22, weight: .bold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
+                Text(big).font(.system(size: 22, weight: .medium).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.7)
                 Text(detail).font(.system(size: 11)).foregroundStyle(KColor.textMuted).lineLimit(2)
                 if let history, history.count > 1 { Sparkline(values: history).frame(height: 18) }
             }
@@ -258,8 +258,8 @@ struct OptimizeRow: View {
         } label: {
             HStack(spacing: 12) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10).fill(gradient).frame(width: 38, height: 38)
-                    Image(systemName: symbol).font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
+                    RoundedRectangle(cornerRadius: 10).fill(KColor.surface2).frame(width: 38, height: 38)
+                    Image(systemName: symbol).font(.system(size: 16, weight: .medium)).foregroundStyle(KColor.textMuted)
                 }
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(KColor.text)
