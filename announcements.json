@@ -26,6 +26,17 @@
         "es": "Si ves esta tarjeta, los anuncios funcionan. No tienes que hacer nada."
       },
       "expires": "2026-11-17"
+    },
+    {
+      "id": "2026-11-17-update-soon",
+      "title": {
+        "tr": "Update Yakında",
+        "en": "Update coming soon",
+        "de": "Update kommt bald",
+        "es": "Actualización muy pronto"
+      },
+      "body": {},
+      "expires": "2026-11-30"
     }
   ]
 }
