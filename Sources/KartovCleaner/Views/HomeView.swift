@@ -109,7 +109,10 @@ struct HomeView: View {
                     }
                 }
                 Divider()
-                Button(L("Profilleri düzenle…")) { model.section = .settings }
+                Button(L("Profilleri düzenle…")) {
+                    SettingsNav.shared.open(.profiles)
+                    model.section = .settings
+                }
             } label: {
                 Label(L("Profil: {0}", profiles.active.title), systemImage: profiles.active.symbol)
             }

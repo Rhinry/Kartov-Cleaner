@@ -287,7 +287,6 @@ final class AppModel: ObservableObject {
     private var analysisTimer: Timer?
 
     /// Two-step confirmation for "reset everything".
-    @Published var confirmResetAll = false
     /// Set by the main window so the menu bar icon can reopen it after it was closed.
     var openMainWindow: (() -> Void)?
     var showBackgroundQuestion: Bool { !showTutorial && !askedBackground }
