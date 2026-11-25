@@ -986,7 +986,9 @@
   "Açınca macOS şifreni son bir kez sorar.": "When you turn it on, macOS asks for your password one last time.",
   "Tek tıkla, sormadan Bakım'da seçtiğin türleri temizler ve belleği boşaltır. Çöp kutusuna dokunmaz.": "One click cleans the types chosen in Maintenance and frees memory, without asking. The Trash is never touched.",
   "Tek tıkla, sormadan önbellekleri ve Bakım'da seçtiğin türleri temizler. Çöp kutusuna dokunmaz.": "One click cleans caches and the types chosen in Maintenance, without asking. The Trash is never touched.",
-  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "You can turn it off any time in Settings › Permissions and privacy."
+  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "You can turn it off any time in Settings › Permissions and privacy.",
+  "Kalıcı olarak silinir · önce sorulur": "Deleted for good · asks first",
+  "Kalıcı olarak silinir": "Deleted for good"
  },
  "de": {
   "Uygulama": "App",
@@ -1975,7 +1977,9 @@
   "Açınca macOS şifreni son bir kez sorar.": "Beim Einschalten fragt macOS ein letztes Mal nach deinem Passwort.",
   "Tek tıkla, sormadan Bakım'da seçtiğin türleri temizler ve belleği boşaltır. Çöp kutusuna dokunmaz.": "Ein Klick bereinigt ohne Rückfrage die in Wartung gewählten Arten und gibt Speicher frei. Der Papierkorb bleibt unberührt.",
   "Tek tıkla, sormadan önbellekleri ve Bakım'da seçtiğin türleri temizler. Çöp kutusuna dokunmaz.": "Ein Klick bereinigt ohne Rückfrage Caches und die in Wartung gewählten Arten. Der Papierkorb bleibt unberührt.",
-  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "Du kannst es jederzeit unter Einstellungen › Zugriff und Datenschutz ausschalten."
+  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "Du kannst es jederzeit unter Einstellungen › Zugriff und Datenschutz ausschalten.",
+  "Kalıcı olarak silinir · önce sorulur": "Endgültig gelöscht · fragt vorher",
+  "Kalıcı olarak silinir": "Endgültig gelöscht"
  },
  "es": {
   "Uygulama": "App",
@@ -2964,6 +2968,8 @@
   "Açınca macOS şifreni son bir kez sorar.": "Al activarlo, macOS pide tu contraseña una última vez.",
   "Tek tıkla, sormadan Bakım'da seçtiğin türleri temizler ve belleği boşaltır. Çöp kutusuna dokunmaz.": "Un clic limpia sin preguntar lo elegido en Mantenimiento y libera memoria. La Papelera no se toca.",
   "Tek tıkla, sormadan önbellekleri ve Bakım'da seçtiğin türleri temizler. Çöp kutusuna dokunmaz.": "Un clic limpia sin preguntar las cachés y lo elegido en Mantenimiento. La Papelera no se toca.",
-  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "Puedes desactivarlo cuando quieras en Ajustes › Permisos y privacidad."
+  "İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin.": "Puedes desactivarlo cuando quieras en Ajustes › Permisos y privacidad.",
+  "Kalıcı olarak silinir · önce sorulur": "Se borra para siempre · pregunta antes",
+  "Kalıcı olarak silinir": "Se borra para siempre"
  }
 }

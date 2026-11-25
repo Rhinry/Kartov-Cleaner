@@ -38,6 +38,26 @@ public enum CleanMode: String, Codable, Sendable {
     case trash
 }
 
+/// What cleaning an item really does, in the words a row may use.
+public enum CleanOutcome: Sendable, Equatable {
+    /// A cache: deleted, the app makes it again.
+    case rebuilds
+    /// Goes to the Trash; History › Undo brings it back.
+    case undoable
+    /// Deleted for good, after a question (the Trash itself).
+    case permanentAfterAsking
+    /// Deleted for good without a question. No shipped rule should be this.
+    case permanent
+}
+
+extension CleanRule {
+    public var outcome: CleanOutcome {
+        if mode == .trash { return .undoable }
+        if confirm == true { return .permanentAfterAsking }
+        return safety == .safe ? .rebuilds : .permanent
+    }
+}
+
 public enum ItemLevel: String, Codable, Sendable {
     /// Each immediate child of a root is one item.
     case children

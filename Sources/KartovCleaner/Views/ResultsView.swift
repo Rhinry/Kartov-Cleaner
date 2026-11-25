@@ -317,7 +317,12 @@ struct GroupRows: View {
         }
         if group.section == .privacy { return L("Silmeden önce sorulur · geri alınabilir") }
         if let rule = group.parts.first.flatMap({ model.rule($0.ruleID) }), rule.safety == .caution {
-            return L("Çöp kutusuna gider · geri alınabilir")
+            // Say what really happens: the Trash itself cannot come back.
+            switch rule.outcome {
+            case .undoable: return L("Çöp kutusuna gider · geri alınabilir")
+            case .permanentAfterAsking: return L("Kalıcı olarak silinir · önce sorulur")
+            case .permanent, .rebuilds: return L("Kalıcı olarak silinir")
+            }
         }
         if group.parts.count > 1 { return L("{0} bölüm", group.parts.count) }
         if let d = group.parts.first?.items.first?.newestModification { return L("Son değişiklik {0}", relativeDay(d)) }
