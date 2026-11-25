@@ -4,6 +4,7 @@ import KartovCore
 /// "Sistem durumu": how the Mac is doing right now, and a few one-click fixes.
 struct SystemView: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var admin = AdminAccess.shared
 
     var body: some View {
         VStack(spacing: 0) {
@@ -105,9 +106,9 @@ struct SystemView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(L("Hızlandır")).font(.system(size: 15, weight: .semibold))
             OptimizeRow(id: "ram", symbol: "memorychip", gradient: KGradient.violet,
-                        title: L("Belleği rahatlat"), text: L("Kullanılmayan belleği boşaltır. Mac şifreni ister."))
+                        title: L("Belleği rahatlat"), text: admin.enabled ? L("Kullanılmayan belleği boşaltır.") : L("Kullanılmayan belleği boşaltır. Mac şifreni ister."))
             OptimizeRow(id: "dns", symbol: "network", gradient: KGradient.accent,
-                        title: L("İnternet bağlantısını tazele"), text: L("Açılmayan siteler için adres önbelleğini yeniler."))
+                        title: L("İnternet bağlantısını tazele"), text: admin.enabled ? L("Açılmayan siteler için adres önbelleğini yeniler.") : L("Açılmayan siteler için adres önbelleğini yeniler. Mac şifreni ister."))
             OptimizeRow(id: "clean", symbol: "sparkles", gradient: KGradient.success,
                         title: L("Önbellekleri temizle"), text: L("Tara, seç ve temizle ekranına gider."))
             if let m = model.optimizeMessage {

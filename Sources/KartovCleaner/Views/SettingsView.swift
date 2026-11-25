@@ -22,6 +22,7 @@ struct SettingsView: View {
         .onAppear {
             model.refreshPermissions()
             NotificationPermission.shared.refresh()
+            AdminAccess.shared.refresh()
         }
         .confirmationDialog(nav.confirm?.title ?? "", isPresented: confirmShown,
                             titleVisibility: .visible, presenting: nav.confirm) { what in

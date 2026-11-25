@@ -162,29 +162,21 @@ enum SystemMonitor {
         }
     }
 
-    // MARK: optimize actions (macOS asks for the administrator password)
+    // MARK: optimize actions (administrator: helper or macOS's password dialog)
 
     /// Frees inactive memory (the `purge` command).
     static func purgeMemory() -> (Bool, String) {
-        runAdmin("/usr/sbin/purge", ok: L("Bellek rahatlatıldı."))
+        result(.memory, ok: L("Bellek rahatlatıldı."))
     }
 
     /// Clears the DNS cache, which fixes many "site won't open" problems.
     static func flushDNS() -> (Bool, String) {
-        runAdmin("/usr/bin/dscacheutil -flushcache; /usr/bin/killall -HUP mDNSResponder", ok: L("İnternet adres önbelleği yenilendi."))
+        result(.dns, ok: L("İnternet adres önbelleği yenilendi."))
     }
 
-    private static func runAdmin(_ command: String, ok: String) -> (Bool, String) {
-        let p = Process()
-        p.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
-        p.arguments = ["-e", "do shell script \"\(command)\" with administrator privileges"]
-        let err = Pipe()
-        p.standardError = err
-        p.standardOutput = Pipe()
-        do { try p.run() } catch { return (false, L("Çalıştırılamadı.")) }
-        p.waitUntilExit()
-        if p.terminationStatus == 0 { return (true, ok) }
-        let e = String(decoding: err.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-        return (false, e.contains("-128") ? L("Yönetici izni verilmedi.") : L("macOS işlemi yapmadı."))
+    private static func result(_ task: AdminTask, ok: String) -> (Bool, String) {
+        let r = AdminAccess.run([task])
+        if r.ok { return (true, ok) }
+        return (false, r.cancelled ? L("Yönetici izni verilmedi.") : L("macOS işlemi yapmadı."))
     }
 }

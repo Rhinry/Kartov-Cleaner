@@ -381,6 +381,7 @@ final class AppModel: ObservableObject {
         optedIn = snap.optedIn
         history = snap.records.sorted { $0.date > $1.date }
         refreshPermissions()
+        AdminAccess.shared.refresh()
         klog("model hazır · Tam Disk Erişimi: \(hasFullDiskAccess ? "açık" : "kapalı")")
         refreshSystemData()
         scheduleAutoCheck()
@@ -544,12 +545,9 @@ final class AppModel: ObservableObject {
         guard !autoRunning, phase != .scanning, phase != .cleaning else { return nil }
         autoRunning = true
         autoMessage = nil
-        var rules = autoRules
-        if rules.isEmpty && quick {
-            let safeGroups: Set<CategoryGroup> = [.apps, .creative, .browsers, .developer, .logs]
-            rules = allRules.filter { safeGroups.contains($0.group) && $0.defaultOn && $0.safety == .safe &&
-                !ProfileStore.shared.protects($0.group) }
-        }
+        let rules = quick
+            ? QuickClean.rules(chosen: autoRules, all: allRules, isProtected: { ProfileStore.shared.protects($0) })
+            : autoRules
         let home = FileManager.default.homeDirectoryForCurrentUser
         let all = allRules
         let threshold = quick ? 0 : autoMinBytes
@@ -750,7 +748,7 @@ final class AppModel: ObservableObject {
                 if let m = await performAutoMaintenance(quick: true) { quickResults.append(m) }
             }
             if action == .optimize || action == .both {
-                quickStatus = L("Bellek boşaltılıyor… (Mac şifreni sorabilir)")
+                quickStatus = AdminAccess.shared.enabled ? L("Bellek boşaltılıyor…") : L("Bellek boşaltılıyor… (Mac şifreni sorabilir)")
                 if let m = await performOptimize("ram") { quickResults.append(m) }
             }
             quickStatus = nil
@@ -1429,7 +1427,9 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Shows macOS's administrator password dialog, then removes the items and measures the gain.
+    /// Asks first (Results), then removes the items as administrator and measures the gain.
+    @Published var showSystemPurgeConfirm = false
+
     func purgeSystemData() {
         guard !systemPurging else { return }
         systemPurging = true

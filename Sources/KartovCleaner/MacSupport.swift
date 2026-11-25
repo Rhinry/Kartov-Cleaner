@@ -93,8 +93,8 @@ enum Finder {
 }
 
 /// Time Machine local snapshots and unfinished macOS update folders: the usual hidden
-/// part of "System Data". Listing needs no rights; removing them asks for the
-/// administrator password through macOS's own dialog.
+/// part of "System Data". Listing needs no rights; removing them needs the administrator
+/// (see AdminAccess).
 enum SystemData {
     static let installDataPath = "/macOS Install Data"
 
@@ -108,16 +108,13 @@ enum SystemData {
     }
 
     static func purge(snapshots: Bool, installData: Bool) -> (ok: Bool, message: String?) {
-        var commands: [String] = []
-        if snapshots { commands.append("/usr/bin/tmutil deletelocalsnapshots /") }
-        if installData { commands.append("/bin/rm -rf '\(installDataPath)'") }
-        guard !commands.isEmpty else { return (true, nil) }
-        // Fixed commands only; nothing from scanned data is interpolated here.
-        let script = "do shell script \"\(commands.joined(separator: "; "))\" with administrator privileges"
-        let result = run("/usr/bin/osascript", ["-e", script])
-        if result.status == 0 { return (true, nil) }
-        if result.error.contains("-128") { return (false, L("Yönetici izni verilmedi; hiçbir şey silinmedi.")) }
-        return (false, L("macOS işlemi reddetti: ") + result.error.trimmingCharacters(in: .whitespacesAndNewlines))
+        var tasks: [AdminTask] = []
+        if snapshots { tasks.append(.snapshots) }
+        if installData { tasks.append(.installData) }
+        let r = AdminAccess.run(tasks)
+        if r.ok { return (true, nil) }
+        if r.cancelled { return (false, L("Yönetici izni verilmedi; hiçbir şey silinmedi.")) }
+        return (false, L("macOS işlemi reddetti: ") + r.error.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     private static func run(_ tool: String, _ args: [String]) -> (status: Int32, output: String, error: String) {

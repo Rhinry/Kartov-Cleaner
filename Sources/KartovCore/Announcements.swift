@@ -11,7 +11,9 @@ import Foundation
 ///     "body":  { "en": "…", "tr": "…" },
 ///     "url": "https://…",                       // optional, opened only when the user clicks
 ///     "minVersion": "0.8.1", "maxVersion": "0.9",  // optional: who sees it
-///     "expires": "2026-12-31"                   // optional: not shown after this day
+///     "expires": "2026-12-31",                  // optional: not shown after this day
+///     "action": "adminAccess"                   // optional: a control inside the card (0.8.6+;
+///                                               // pair it with minVersion so older apps skip it)
 /// } ] }
 /// ```
 public struct Announcement: Codable, Sendable, Equatable, Identifiable {
@@ -22,12 +24,16 @@ public struct Announcement: Codable, Sendable, Equatable, Identifiable {
     public let minVersion: String?
     public let maxVersion: String?
     public let expires: String?
+    public let action: String?
 
     public init(id: String, title: [String: String], body: [String: String], url: String? = nil,
-                minVersion: String? = nil, maxVersion: String? = nil, expires: String? = nil) {
+                minVersion: String? = nil, maxVersion: String? = nil, expires: String? = nil, action: String? = nil) {
         self.id = id; self.title = title; self.body = body; self.url = url
-        self.minVersion = minVersion; self.maxVersion = maxVersion; self.expires = expires
+        self.minVersion = minVersion; self.maxVersion = maxVersion; self.expires = expires; self.action = action
     }
+
+    /// An action this version knows; unknown ones are ignored and the card shows text only.
+    public var knownAction: AnnouncementAction? { action.flatMap(AnnouncementAction.init(rawValue:)) }
 
     /// The text in `language`, else English, else any language given.
     public static func pick(_ texts: [String: String], language: String) -> String {
@@ -62,6 +68,12 @@ public struct Announcement: Codable, Sendable, Equatable, Identifiable {
         if let max = maxVersion, !max.isEmpty, AppVersion.isNewer(version, than: max) { return false }
         return true
     }
+}
+
+/// Controls an announcement card can carry.
+public enum AnnouncementAction: String, Sendable {
+    /// The "Don't ask for a password" switch (Settings › Permissions and privacy).
+    case adminAccess
 }
 
 public enum AppVersion {

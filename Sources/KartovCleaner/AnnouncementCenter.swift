@@ -10,6 +10,9 @@ struct PendingAnnouncement: Codable, Identifiable, Equatable {
     let body: String
     let link: String?
     let date: Date
+    var action: String? = nil
+
+    var knownAction: AnnouncementAction? { action.flatMap(AnnouncementAction.init(rawValue:)) }
 
     var url: URL? { link.flatMap(URL.init(string:)).flatMap { $0.scheme == "https" ? $0 : nil } }
 }
@@ -76,14 +79,17 @@ final class AnnouncementCenter: ObservableObject {
             guard let (data, response) = try? await URLSession.shared.data(for: req),
                   (response as? HTTPURLResponse)?.statusCode == 200 else { return }
             let all = AnnouncementFeed.parse(data)
+            // A card that asks to turn something on is pointless once it is on.
+            let done = Set(all.filter { $0.knownAction == .adminAccess && AdminAccess.shared.enabled }.map(\.id))
+            if !done.isEmpty { seen = seen.union(done) }
             let new = AnnouncementFeed.toShow(all, seen: seen, version: Updater.shared.currentVersion, language: I18n.code)
             guard !new.isEmpty else { return }
             seen = seen.union(new.map(\.id))
             let lang = I18n.code
             for a in new {
                 let p = PendingAnnouncement(id: a.id, title: a.title(in: lang), body: a.body(in: lang),
-                                            link: a.link?.absoluteString, date: Date())
-                Guardian.shared.announce(id: a.id, title: p.title, detail: p.body, link: p.link)
+                                            link: a.link?.absoluteString, date: Date(), action: a.knownAction?.rawValue)
+                Guardian.shared.announce(id: a.id, title: p.title, detail: p.body, link: p.link, action: p.action)
                 queue.append(p)
             }
             klog("duyuru: \(new.map(\.id).joined(separator: ", "))")
@@ -120,7 +126,7 @@ final class AnnouncementCenter: ObservableObject {
     /// Shows an announcement again from Gözetim's list.
     func reopen(_ alert: GuardianAlert) {
         let p = PendingAnnouncement(id: alert.id.uuidString, title: alert.title, body: alert.detail,
-                                    link: alert.link, date: alert.date)
+                                    link: alert.link, date: alert.date, action: alert.action)
         queue.removeAll { $0.id == p.id }
         queue.insert(p, at: 0)
     }

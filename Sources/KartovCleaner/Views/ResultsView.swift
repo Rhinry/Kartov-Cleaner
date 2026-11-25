@@ -422,6 +422,7 @@ struct UserFilesWarning: View {
 /// Time Machine local snapshots and unfinished macOS updates: needs the administrator password.
 struct SystemDataCard: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var admin = AdminAccess.shared
 
     private var hasSomething: Bool { (model.snapshotCount ?? 0) > 0 || model.installDataPresent }
 
@@ -439,21 +440,39 @@ struct SystemDataCard: View {
                 if model.systemPurging {
                     ProgressView().controlSize(.small)
                 } else if hasSomething {
-                    Button(L("Temizle (şifre ister)")) { model.purgeSystemData() }
+                    Button(admin.enabled ? L("Temizle…") : L("Temizle (şifre ister)")) { model.showSystemPurgeConfirm = true }
                         .buttonStyle(SecondaryButtonStyle())
                 }
             }
             .padding(.horizontal, 14).padding(.vertical, 10)
             .background(RoundedRectangle(cornerRadius: 12).fill(KColor.surface))
             .padding(.horizontal, 12)
+            // The password dialog used to be the only question; without it Kartov asks itself.
+            .confirmationDialog(L("Sistem Verisi temizlensin mi?"), isPresented: $model.showSystemPurgeConfirm,
+                                titleVisibility: .visible) {
+                Button(L("Kalıcı olarak sil"), role: .destructive) { model.purgeSystemData() }
+                Button(L("Vazgeç"), role: .cancel) {}
+            } message: {
+                Text(confirmText)
+            }
         }
+    }
+
+    private var confirmText: String {
+        var parts: [String] = []
+        if let n = model.snapshotCount, n > 0 {
+            parts.append(L("Bu Mac'teki {0} Time Machine anlık görüntüsü kalıcı olarak silinir; o anlara buradan dönülemez.", n))
+        }
+        if model.installDataPresent { parts.append(L("Yarım kalmış macOS güncellemesinin dosyaları silinir.")) }
+        parts.append(L("Harici diskteki yedeklerine ve kendi dosyalarına dokunulmaz."))
+        return parts.joined(separator: " ")
     }
 
     private var detail: String {
         var parts: [String] = []
         if let n = model.snapshotCount, n > 0 { parts.append(L("{0} Time Machine anlık görüntüsü", n)) }
         if model.installDataPresent { parts.append(L("yarım kalmış bir macOS güncellemesi")) }
-        return parts.joined(separator: " · ") + ". Harici diskteki yedeklerine dokunulmaz."
+        return parts.joined(separator: " · ") + ". " + L("Harici diskteki yedeklerine dokunulmaz.")
     }
 }
 

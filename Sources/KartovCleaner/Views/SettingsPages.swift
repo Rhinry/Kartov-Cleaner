@@ -48,18 +48,15 @@ struct GeneralSettingsPage: View {
 
     /// A single click can clean, so the note says exactly what that click does.
     private var clickNote: String {
-        let trash = model.autoGroups.contains(.trash)
         switch model.menuBarAction {
         case .panel:
             return L("Küçük bir pencere açılır. Sen seçmeden bir şey yapılmaz.")
         case .optimize:
-            return L("Bellek boşaltılır. macOS şifreni sorabilir.")
+            return AdminAccess.shared.enabled ? L("Bellek boşaltılır.") : L("Bellek boşaltılır. macOS şifreni sorabilir.")
         case .clean:
-            return trash ? L("Tek tıkla, sormadan temizler. Bakım'da seçtiğin için çöp kutusu da boşalır.")
-                         : L("Tek tıkla, sormadan önbellekleri ve Bakım'da seçtiğin türleri temizler.")
+            return L("Tek tıkla, sormadan önbellekleri ve Bakım'da seçtiğin türleri temizler. Çöp kutusuna dokunmaz.")
         case .both:
-            return trash ? L("Tek tıkla, sormadan temizler ve belleği boşaltır. Bakım'da seçtiğin için çöp kutusu da boşalır.")
-                         : L("Tek tıkla, sormadan Bakım'da seçtiğin türleri temizler ve belleği boşaltır.")
+            return L("Tek tıkla, sormadan Bakım'da seçtiğin türleri temizler ve belleği boşaltır. Çöp kutusuna dokunmaz.")
         }
     }
 }
@@ -272,6 +269,7 @@ struct AlertsSettingsPage: View {
 
 struct PrivacySettingsPage: View {
     @EnvironmentObject var model: AppModel
+    @ObservedObject private var admin = AdminAccess.shared
 
     var body: some View {
         SettingsPageBody(title: SettingsPage.privacy.title,
@@ -291,9 +289,18 @@ struct PrivacySettingsPage: View {
                         }
                     }
                 }
-                SettingsDivider()
-                SettingsStatus(tone: .neutral, title: L("Mac şifren"),
-                               note: L("Belleği boşaltırken ve Sistem Verisi'ni temizlerken macOS sorar. Kartov şifreni görmez ve saklamaz.")) { EmptyView() }
+            }
+
+            SettingsGroup(title: L("Mac şifren"), footer: adminFooter) {
+                SettingsToggle(L("Şifre sormadan yap"), note: adminNote, isOn: admin.enabled) { on in
+                    if on { admin.enable() } else { admin.disable() }
+                }
+                .disabled(admin.busy)
+                .opacity(admin.busy ? 0.5 : 1)
+                if let m = admin.message {
+                    SettingsDivider()
+                    SettingsStatus(tone: .attention, title: m, note: L("İstersen yeniden deneyebilirsin.")) { EmptyView() }
+                }
             }
 
             SettingsGroup(title: L("Gizlilik")) {
@@ -301,6 +308,19 @@ struct PrivacySettingsPage: View {
                                note: L("Dosyaların ve ölçümlerin hiçbir yere gönderilmez. Kartov internete yalnızca güncelleme ve duyurular için bağlanır.")) { EmptyView() }
             }
         }
+    }
+}
+
+extension PrivacySettingsPage {
+    fileprivate var adminNote: String {
+        if admin.busy { return L("macOS'un penceresi bekleniyor…") }
+        return admin.enabled
+            ? L("Belleği boşaltma, internet önbelleğini yenileme ve Sistem Verisi temizliği şifre sormadan yapılır. Kapatırken macOS bir kez daha sorar.")
+            : L("Bu üç iş için macOS her seferinde şifreni sorar. Açarsan son bir kez sorar, sonra sormaz.")
+    }
+
+    fileprivate var adminFooter: String {
+        L("Kartov şifreni görmez ve saklamaz; izni macOS verir. Açıkken Mac'indeki başka programlar da bu üç işi şifresiz yapabilir. Kişisel dosyalarına hiçbiri dokunmaz, Sistem Verisi temizliği Kartov'da yine önce sorar.")
     }
 }
 

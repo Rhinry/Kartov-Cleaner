@@ -47,3 +47,23 @@ final class AnnouncementsTests: XCTestCase {
         XCTAssertFalse(a.isActive(version: "1", now: f.date(from: "2026-11-17 00:30")!))
     }
 }
+
+final class AnnouncementActionTests: XCTestCase {
+    func testActionIsReadAndUnknownOnesAreIgnored() {
+        let data = """
+        { "announcements": [
+          { "id": "a", "title": { "en": "Turn it on" }, "body": {}, "action": "adminAccess", "minVersion": "0.8.6" },
+          { "id": "b", "title": { "en": "Future" }, "body": {}, "action": "somethingNew" },
+          { "id": "c", "title": { "en": "Plain" }, "body": {} }
+        ] }
+        """.data(using: .utf8)!
+        let all = AnnouncementFeed.parse(data)
+        XCTAssertEqual(all.map(\.id), ["a", "b", "c"])
+        XCTAssertEqual(all[0].knownAction, .adminAccess)
+        XCTAssertNil(all[1].knownAction)
+        XCTAssertNil(all[2].knownAction)
+        // Older versions never see the switch.
+        XCTAssertFalse(all[0].isActive(version: "0.8.5"))
+        XCTAssertTrue(all[0].isActive(version: "0.8.6"))
+    }
+}

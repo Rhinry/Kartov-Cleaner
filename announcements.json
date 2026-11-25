@@ -37,6 +37,24 @@
       },
       "body": {},
       "expires": "2026-11-30"
+    },
+    {
+      "id": "2026-11-25-no-password",
+      "title": {
+        "tr": "Artık her seferinde şifre girmen gerekmiyor",
+        "en": "No more typing your password every time",
+        "de": "Nicht mehr jedes Mal das Passwort eingeben",
+        "es": "Ya no tienes que escribir tu contraseña cada vez"
+      },
+      "body": {
+        "tr": "Belleği boşaltmak, internet önbelleğini yenilemek ve Sistem Verisi'ni temizlemek için macOS her seferinde şifreni soruyordu. Aşağıdaki anahtarı açarsan son bir kez sorar, sonra bu üç işte sormaz.\n\nKartov şifreni görmez ve saklamaz. Açıkken Mac'indeki başka programlar da bu üç işi şifresiz yapabilir; hiçbiri kişisel dosyalarına dokunmaz.",
+        "en": "macOS asked for your password every time you freed memory, refreshed the internet cache or cleaned System Data. Turn on the switch below and it asks one last time, then never again for these three jobs.\n\nKartov never sees or stores your password. While this is on, other apps on your Mac can also do these three jobs without a password; none of them touches your personal files.",
+        "de": "macOS hat jedes Mal nach deinem Passwort gefragt, wenn du Speicher freigegeben, den Internet-Cache erneuert oder Systemdaten bereinigt hast. Schalte unten ein, dann fragt es ein letztes Mal und bei diesen drei Aufgaben nie wieder.\n\nKartov sieht und speichert dein Passwort nie. Solange das an ist, können auch andere Apps auf deinem Mac diese drei Aufgaben ohne Passwort ausführen; keine davon berührt deine persönlichen Dateien.",
+        "es": "macOS pedía tu contraseña cada vez que liberabas memoria, renovabas la caché de internet o limpiabas Datos del sistema. Activa el interruptor de abajo: la pedirá una última vez y nunca más para estas tres tareas.\n\nKartov nunca ve ni guarda tu contraseña. Mientras esté activado, otras apps de tu Mac también pueden hacer estas tres tareas sin contraseña; ninguna toca tus archivos personales."
+      },
+      "minVersion": "0.8.6",
+      "action": "adminAccess",
+      "expires": "2027-01-31"
     }
   ]
 }

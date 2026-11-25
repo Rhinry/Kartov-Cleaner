@@ -255,3 +255,18 @@ public struct Paths: Sendable {
         return (attrs[.type] as? FileAttributeType) == .typeSymbolicLink
     }
 }
+
+/// One-click clean from the menu bar runs without asking, so it never empties the Trash (which
+/// deletes for good). Scheduled maintenance is not this: there the user chose the Trash on purpose.
+public enum QuickClean {
+    static let fallbackGroups: Set<CategoryGroup> = [.apps, .creative, .browsers, .developer, .logs]
+
+    /// `chosen`: what Maintenance would clean. Nothing chosen means the safe cache groups.
+    public static func rules(chosen: [CleanRule], all: [CleanRule], isProtected: (CategoryGroup) -> Bool) -> [CleanRule] {
+        let base = chosen.isEmpty
+            ? all.filter { fallbackGroups.contains($0.group) && $0.defaultOn && $0.safety == .safe && !isProtected($0.group) }
+            : chosen
+        // Removed after the fallback: someone who chose only the Trash gets nothing, not other groups.
+        return base.filter { $0.group != .trash }
+    }
+}

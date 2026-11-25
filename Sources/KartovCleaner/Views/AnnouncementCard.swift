@@ -6,6 +6,7 @@ struct AnnouncementOverlay: View {
     @EnvironmentObject var model: AppModel
     @ObservedObject private var center = AnnouncementCenter.shared
     @ObservedObject private var updater = Updater.shared
+    @ObservedObject private var admin = AdminAccess.shared
 
     var body: some View {
         if let a = center.current, !model.showTutorial, !updater.showSheet, !updater.showWhatsNew {
@@ -19,7 +20,7 @@ struct AnnouncementOverlay: View {
                             .background(Circle().fill(KGradient.accent))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(L("Duyuru")).font(.system(size: 12, weight: .semibold)).foregroundStyle(KColor.accentSoft)
-                            Text(relativeDay(a.date)).font(.system(size: 11)).foregroundStyle(KColor.textMuted)
+                            Text(relativeDay(min(a.date, Date()))).font(.system(size: 11)).foregroundStyle(KColor.textMuted)
                         }
                         Spacer()
                         if center.queue.count > 1 {
@@ -38,6 +39,7 @@ struct AnnouncementOverlay: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    if a.knownAction == .adminAccess { adminSwitch }
                     HStack(spacing: 10) {
                         Text(L("Gözetim'deki uyarılarda da durur."))
                             .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
@@ -64,6 +66,26 @@ struct AnnouncementOverlay: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .transition(.opacity)
+        }
+    }
+
+    /// The same switch as Settings › Permissions and privacy, so it can be turned on right here.
+    private var adminSwitch: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SettingsToggle(L("Şifre sormadan yap"),
+                           note: admin.busy ? L("macOS'un penceresi bekleniyor…")
+                                 : admin.enabled ? L("Açık. Bu işler artık şifre sormadan yapılır.")
+                                 : L("Açınca macOS şifreni son bir kez sorar."),
+                           isOn: admin.enabled) { on in if on { admin.enable() } else { admin.disable() } }
+                .disabled(admin.busy)
+                .opacity(admin.busy ? 0.5 : 1)
+                .background(RoundedRectangle(cornerRadius: KRadius.md).fill(KColor.surface2))
+                .clipShape(RoundedRectangle(cornerRadius: KRadius.md))
+            if let m = admin.message {
+                Text(m).font(.system(size: 12)).foregroundStyle(KColor.warning)
+            }
+            Text(L("İstediğin zaman Ayarlar › İzinler ve gizlilik'ten kapatabilirsin."))
+                .font(.system(size: 11)).foregroundStyle(KColor.textMuted)
         }
     }
 }

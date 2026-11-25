@@ -18,6 +18,8 @@ struct GuardianAlert: Codable, Identifiable, Hashable {
     var read: Bool
     /// Announcements only: an https link opened when the user clicks.
     var link: String? = nil
+    /// Announcements only: a control shown in the card (see AnnouncementAction).
+    var action: String? = nil
 
     var symbol: String {
         switch kind {
@@ -577,9 +579,9 @@ final class Guardian: ObservableObject {
 
     /// A message from the developer (see AnnouncementCenter): kept in the alert list. The card and the
     /// "new announcement" notification are AnnouncementCenter's.
-    func announce(id: String, title: String, detail: String, link: String?) {
+    func announce(id: String, title: String, detail: String, link: String?, action: String? = nil) {
         let a = GuardianAlert(id: UUID(), date: Date(), kind: .announcement, title: title, detail: detail,
-                              bundleID: nil, appName: nil, read: false, link: link)
+                              bundleID: nil, appName: nil, read: false, link: link, action: action)
         alerts.insert(a, at: 0)
         if alerts.count > 100 { alerts.removeLast(alerts.count - 100) }
         save()
