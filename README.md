@@ -26,12 +26,15 @@
 - **Cleanup:** Removes caches from apps, browsers, creative tools (After Effects, Premiere, DaVinci Resolve) and developer tools, plus old logs, leftover macOS installers and System Data. You choose **Clean** or **Keep** for each app and see how much space you'll get back before anything happens.
 - **Projects (new in 0.8):** Finds your After Effects and Premiere Pro projects and shows what piled up next to each one: preview renders, media caches, auto-saves, proxies and Media Encoder leftovers. Projects you haven't saved in 30 to 180 days are flagged, and one click selects only the caches that rebuild themselves. Project files, media and renders are never offered; everything goes to the Trash. External disks can be added.
 - **Full scan:** Lists your apps, videos, images and documents by size. Sort them, multi-select, and move what you don't need to the Trash.
+- **Duplicates (0.8.4):** After a full scan, files whose contents are identical byte for byte are grouped, whatever their names. One copy of every group always stays; you pick which. Copies made with Finder's Duplicate share their data and free nothing, so they are marked and never suggested.
 - **Analysis:** Shows which apps are open and how much memory, CPU and disk each one uses, which ones you use most, and which you haven't opened in months. You can quit, force quit or uninstall them.
 - **System status:** Live CPU, memory, disk and battery. Free up memory in one click and trim the apps that start at login.
+- **No more password prompts (0.8.6):** freeing memory, refreshing the DNS cache and cleaning System Data need an administrator. Turn on *Don't ask for a password* once and macOS asks one last time, then never again for these jobs. Kartov never sees your password, and the switch turns it off again.
 - **Auto maintenance:** Cleans the categories you pick, on the day and time you choose. It never touches your personal files.
-- **Menu bar:** One click on the little globe cleans, optimizes, or does both.
+- **Menu bar:** One click on the little globe cleans, optimizes, or does both. It never empties the Trash.
 - **Updates:** Lets you know when a new version is out and installs it only if you say so.
-- **Announcements (0.8.1):** short news from the developer, read from [`announcements.json`](announcements.json) in this repository and shown once as a notification. No server, no tracking; can be turned off in Settings.
+- **Settings (0.8.5):** seven plain topics, one at a time. Every option says what it does in one sentence, and each topic shows how it stands before you open it.
+- **Announcements:** short news from the developer, read from [`announcements.json`](announcements.json) in this repository and shown once as a card inside the app. A card can carry a switch, so a new option can be turned on right there. No server, no tracking; can be turned off in Settings › Notifications.
 
 ### Guardian (new in 0.7)
 
@@ -49,31 +52,33 @@ Kartov now keeps an eye on your Mac in the background, once a minute. It only re
 
 ## Screenshots
 
-| Overview | Cleanup |
+| Overview | Settings |
 |:---:|:---:|
-| <img src="docs/screenshots/overview.png" alt="Overview"> | <img src="docs/screenshots/cleanup.png" alt="Cleanup"> |
-| **Analysis** | **System status** |
-| <img src="docs/screenshots/analysis.png" alt="Analysis"> | <img src="docs/screenshots/system.png" alt="System status"> |
+| <img src="docs/screenshots/overview.png" alt="Overview"> | <img src="docs/screenshots/settings.png" alt="Settings"> |
+| **System status** | **Don't ask for a password** |
+| <img src="docs/screenshots/system.png" alt="System status"> | <img src="docs/screenshots/permissions.png" alt="Settings, permissions and privacy"> |
 
 <p align="center">
   <img src="docs/screenshots/maintenance.png" width="860" alt="Auto maintenance"><br>
-  <sub>Auto maintenance · screenshots show the Turkish interface; the app follows your Mac's language (English, Türkçe, Deutsch, Español).</sub>
+  <sub>Auto maintenance · the app follows your Mac's language (English, Türkçe, Deutsch, Español) and can be switched in Settings.</sub>
 </p>
 
 ## Safety first
 
 - Scanning **never deletes anything**; it only looks.
 - Caches are deleted, and apps rebuild them when needed. Personal files, uninstalled apps and installers go to the **Trash**, and **History › Undo** brings them back in one click.
-- You are **always asked** before browsing history is cleared or the Trash is emptied.
+- You are **always asked** before browsing history is cleared, the Trash is emptied or System Data is cleaned. The one-click clean in the menu bar never touches the Trash; Auto maintenance empties it only if you choose the Trash there.
 - Caches of apps that are currently open are never touched.
 - The Photos library, iCloud Drive, Mail, Keychain and the inside of app bundles are off-limits in code.
-- Kartov **never sends your data anywhere.** Its only network request checks GitHub for new versions.
+- Kartov **never sends your data anywhere.** It only goes online to check GitHub for new versions and announcements.
+- *Don't ask for a password* is off until you turn it on. It installs a tiny helper that can do only four fixed jobs (free memory, refresh DNS, remove local Time Machine snapshots and an unfinished macOS update) and is checked by macOS's `visudo` before it is put in place. While it is on, other apps on your Mac can run those four jobs without a password too.
 
 ## Install
 
 1. Download `Kartov Cleaner x.x.dmg` from [Releases](../../releases/latest).
 2. Open the DMG and drag **Kartov Cleaner** into **Applications**.
 3. A short intro tour starts on first launch. Its last step asks for **Full Disk Access** (System Settings › Privacy & Security › Full Disk Access › turn on Kartov Cleaner). The app works without it, but some folders can't be scanned.
+4. Optional: in **Settings › Permissions and privacy**, turn on **Don't ask for a password** so memory and System Data jobs stop asking for your password.
 
 > **Seeing a "cannot be verified" warning?** Right-click the app and choose **Open**, or go to System Settings › Privacy & Security and click **Open Anyway**. The warning will go away once the app is signed with an Apple Developer ID.
 
